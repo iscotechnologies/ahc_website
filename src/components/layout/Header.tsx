@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, Phone, Heart } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone } from 'lucide-react';
 import { BookNowModal } from './BookNowModal';
 
 export const Header: React.FC = () => {
@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
         {/* Top Info Bar */}
         <div className="bg-primary-900 px-4 py-2 text-xs font-medium text-primary-50 sm:px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-1">
           <div className="flex items-center gap-1.5">
-            <Heart className="h-3.5 w-3.5 text-primary-400 fill-primary-400" />
+            <span className="text-primary-400">♥</span>
             <span>Serving Chennai, Trichy & Madurai</span>
           </div>
           <div className="flex items-center gap-4">
@@ -56,18 +56,12 @@ export const Header: React.FC = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-md shadow-primary-200 transition-transform group-hover:scale-105">
-                <Heart className="h-5 w-5 fill-current" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif text-lg font-bold tracking-wide text-warm-900 group-hover:text-primary-600 transition-colors leading-none">
-                  AYUSYA
-                </span>
-                <span className="text-[10px] font-semibold text-warm-500 uppercase tracking-widest leading-none mt-1">
-                  Health Care
-                </span>
-              </div>
+            <Link to="/" className="flex items-center group">
+              <img
+                src="/assets/logo.jpeg"
+                alt="Ayusya Health Care"
+                className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+              />
             </Link>
 
             {/* Desktop Navigation */}

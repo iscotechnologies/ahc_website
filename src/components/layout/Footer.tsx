@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin } from 'lucide-react';
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -25,13 +25,12 @@ export const Footer: React.FC = () => {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           {/* Column 1: Brand & Contact Info */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white">
-                <Heart className="h-4 w-4 fill-current" />
-              </div>
-              <span className="font-serif text-base font-bold tracking-wide text-warm-900">
-                AYUSYA HEALTH CARE
-              </span>
+            <Link to="/" className="flex items-center">
+              <img
+                src="/assets/logo.jpeg"
+                alt="Ayusya Health Care"
+                className="h-10 w-auto object-contain"
+              />
             </Link>
             <p className="text-xs text-warm-500 leading-relaxed">
               Providing professional, warm, and dignified home healthcare services across Tamil Nadu. Bringing clinical excellence straight to your doorstep.
