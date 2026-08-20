@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { getTeamMembers, TeamMember } from '../lib/queries/team';
+import { getHospitals, Hospital } from '../lib/queries/hospitals';
 import { User, Award, ShieldAlert, Building2, CheckCircle2, ChevronRight, Activity, Beaker } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 import { AnimatedSection } from '../components/shared/AnimatedSection';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 
@@ -69,53 +71,72 @@ const fallbackTeam: TeamMember[] = [
   },
 ];
 
+const fallbackHospitals: Hospital[] = [
+  {
+    id: '1',
+    name: 'MedIndia Hospitals – Chennai',
+    subtitle: 'Chain of Super Specialty Digestive Disease Institutions',
+    description: 'MedIndia Hospitals (a unit of MedIndia Institute of Medical Specialities) is a chain of digestive disease institutions of international repute equipped with state of the art diagnostics, surgical facilities and medical professionals. Offering comprehensive G.I. care on par with international standard under one roof, it was the first to conceive and execute the Esophageal Lab and Intensive Digestive Care Unit (IDCU).',
+    more_info: 'A pioneering teaching and training center, MedIndia has organized over 140 Weekly Scientific meetings for City based Gastroenterologists and multiple international endoscopy crash courses, training over 300 doctors in basic and advanced endoscopy techniques.',
+    image_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80',
+    display_order: 1
+  },
+  {
+    id: '2',
+    name: 'Vasanthi Orthopaedic Hospital (VOH)',
+    subtitle: '30+ Years of Orthopaedic Excellence (50+ Beds)',
+    description: 'Vasanthi Orthopaedic Hospital is one of the most respected healthcare providers in Chennai. Founded by Dr. R.H. Govardhan (who has conducted 2,000+ surgeries), VOH specialises in arthroscopy, trauma recovery, spinal injuries, and complicated joint replacement.',
+    more_info: 'VOH offers dedicated treatments in all minor and major osteoarthritic issues. A leading treatment module includes platelet-rich plasma transfusion for patients with osteoarthritis. Their multidisciplinary team of anaesthesiologists, rheumatologists, and rehab experts ensure a smooth recovery.',
+    image_url: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+    display_order: 2
+  },
+  {
+    id: '3',
+    name: 'Star Bone and Joint Specialty Hospitals',
+    subtitle: 'Leading Bone and Joint Healthcare Provider (50+ Beds)',
+    description: 'Star Bone and Joint Hospital is a highly experienced healthcare provider in Chennai with over 30 years of clinical practice. Founded by Dr. Amarnath Sowlee (who has conducted 1,500+ orthopaedic surgeries), the hospital is located in the heart of Chennai City.',
+    more_info: 'The Orthopaedic and Joint Replacement department deals with trauma recovery, spinal injuries, minimally invasive bone restructuring, and joint replacement. Their specialized team coordinates home physical therapy and postoperative mobility programs in partnership with Ayusya.',
+    image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    display_order: 3
+  }
+];
+
 export const ClinicalAssociates: React.FC = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
+  const [hospitalPartners, setHospitalPartners] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'doctors' | 'hospitals' | 'affiliates'>('doctors');
 
   useEffect(() => {
-    async function loadTeam() {
+    async function loadData() {
       try {
-        const data = await getTeamMembers();
-        if (data && data.length > 0) {
-          setMembers(data);
+        const [teamData, hospitalsData] = await Promise.allSettled([
+          getTeamMembers(),
+          getHospitals()
+        ]);
+
+        if (teamData.status === 'fulfilled' && teamData.value && teamData.value.length > 0) {
+          setMembers(teamData.value);
         } else {
           setMembers(fallbackTeam);
         }
+
+        if (hospitalsData.status === 'fulfilled' && hospitalsData.value && hospitalsData.value.length > 0) {
+          setHospitalPartners(hospitalsData.value);
+        } else {
+          setHospitalPartners(fallbackHospitals);
+        }
       } catch (err) {
-        console.error('Failed to load team, using fallback', err);
+        console.error('Failed to load clinical associate page data, using fallbacks', err);
         setMembers(fallbackTeam);
+        setHospitalPartners(fallbackHospitals);
       } finally {
         setLoading(false);
       }
     }
-    loadTeam();
+    loadData();
   }, []);
 
-  const hospitalPartners = [
-    {
-      name: 'MedIndia Hospitals – Chennai',
-      subtitle: 'Chain of Super Specialty Digestive Disease Institutions',
-      description: 'MedIndia Hospitals (a unit of MedIndia Institute of Medical Specialities) is a chain of digestive disease institutions of international repute equipped with state of the art diagnostics, surgical facilities and medical professionals. Offering comprehensive G.I. care on par with international standard under one roof, it was the first to conceive and execute the Esophageal Lab and Intensive Digestive Care Unit (IDCU).',
-      moreInfo: 'A pioneering teaching and training center, MedIndia has organized over 140 Weekly Scientific meetings for City based Gastroenterologists and multiple international endoscopy crash courses, training over 300 doctors in basic and advanced endoscopy techniques.',
-      img: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      name: 'Vasanthi Orthopaedic Hospital (VOH)',
-      subtitle: '30+ Years of Orthopaedic Excellence (50+ Beds)',
-      description: 'Vasanthi Orthopaedic Hospital is one of the most respected healthcare providers in Chennai. Founded by Dr. R.H. Govardhan (who has conducted 2,000+ surgeries), VOH specialises in arthroscopy, trauma recovery, spinal injuries, and complicated joint replacement.',
-      moreInfo: 'VOH offers dedicated treatments in all minor and major osteoarthritic issues. A leading treatment module includes platelet-rich plasma transfusion for patients with osteoarthritis. Their multidisciplinary team of anaesthesiologists, rheumatologists, and rehab experts ensure a smooth recovery.',
-      img: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      name: 'Star Bone and Joint Specialty Hospitals',
-      subtitle: 'Leading Bone and Joint Healthcare Provider (50+ Beds)',
-      description: 'Star Bone and Joint Hospital is a highly experienced healthcare provider in Chennai with over 30 years of clinical practice. Founded by Dr. Amarnath Sowlee (who has conducted 1,500+ orthopaedic surgeries), the hospital is located in the heart of Chennai City.',
-      moreInfo: 'The Orthopaedic and Joint Replacement department deals with trauma recovery, spinal injuries, minimally invasive bone restructuring, and joint replacement. Their specialized team coordinates home physical therapy and postoperative mobility programs in partnership with Ayusya.',
-      img: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
-    },
-  ];
 
   const affiliates = [
     {
@@ -320,14 +341,14 @@ export const ClinicalAssociates: React.FC = () => {
               <div className="space-y-8">
                 {hospitalPartners.map((hospital, index) => (
                   <AnimatedSection
-                    key={index}
+                    key={hospital.id || index}
                     direction="up"
                     delay={index * 0.05}
                     className="flex flex-col md:flex-row gap-6 rounded-3xl border border-warm-200 bg-white p-6 shadow-xs hover:shadow-md transition-shadow duration-300"
                   >
                     <div className="w-full md:w-1/3 h-52 md:h-auto overflow-hidden rounded-2xl bg-warm-100">
                       <img
-                        src={hospital.img}
+                        src={hospital.image_url}
                         alt={hospital.name}
                         className="h-full w-full object-cover"
                       />
@@ -347,9 +368,10 @@ export const ClinicalAssociates: React.FC = () => {
                           {hospital.description}
                         </p>
                         <p className="text-xs text-warm-500 leading-relaxed border-t border-warm-100 pt-3 italic">
-                          {hospital.moreInfo}
+                          {hospital.more_info}
                         </p>
                       </div>
+
                       <div className="pt-2 flex justify-end">
                         <Link
                           to="/contact/referral-partner"

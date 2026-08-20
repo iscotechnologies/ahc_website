@@ -190,3 +190,60 @@ values
     'Seeking patient and warm caretakers with training in geriatric support. Tasks include personal hygiene assistance, mobility assistance, feed assistance, and medication reminders.',
     true
   );
+
+-- 6. Site Settings
+insert into site_settings (id, under_maintenance, marquee_notification, show_marquee, hero_title, hero_description, hero_image_url)
+values (
+  1, 
+  false, 
+  'Welcome to Ayusya Health Care. We provide professional home services across Chennai, Trichy, and Madurai.', 
+  false,
+  'Best Home Health Care in Chennai, Trichy & Madurai',
+  'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.',
+  'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80'
+) on conflict (id) do nothing;
+
+-- 7. Tie-up Hospitals
+insert into tieup_hospitals (name, subtitle, description, more_info, image_url, display_order)
+values 
+  (
+    'MedIndia Hospitals – Chennai', 
+    'Chain of Super Specialty Digestive Disease Institutions', 
+    'MedIndia Hospitals (a unit of MedIndia Institute of Medical Specialities) is a chain of digestive disease institutions of international repute equipped with state of the art diagnostics, surgical facilities and medical professionals. Offering comprehensive G.I. care on par with international standard under one roof, it was the first to conceive and execute the Esophageal Lab and Intensive Digestive Care Unit (IDCU).', 
+    'A pioneering teaching and training center, MedIndia has organized over 140 Weekly Scientific meetings for City based Gastroenterologists and multiple international endoscopy crash courses, training over 300 doctors in basic and advanced endoscopy techniques.', 
+    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80',
+    1
+  ),
+  (
+    'Vasanthi Orthopaedic Hospital (VOH)', 
+    '30+ Years of Orthopaedic Excellence (50+ Beds)', 
+    'Vasanthi Orthopaedic Hospital is one of the most respected healthcare providers in Chennai. Founded by Dr. R.H. Govardhan (who has conducted 2,000+ surgeries), VOH specialises in arthroscopy, trauma recovery, spinal injuries, and complicated joint replacement.', 
+    'VOH offers dedicated treatments in all minor and major osteoarthritic issues. A leading treatment module includes platelet-rich plasma transfusion for patients with osteoarthritis. Their multidisciplinary team of anaesthesiologists, rheumatologists, and rehab experts ensure a smooth recovery.', 
+    'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80',
+    2
+  ),
+  (
+    'Star Bone and Joint Specialty Hospitals', 
+    'Leading Bone and Joint Healthcare Provider (50+ Beds)', 
+    'Star Bone and Joint Hospital is a highly experienced healthcare provider in Chennai with over 30 years of clinical practice. Founded by Dr. Amarnath Sowlee (who has conducted 1,500+ orthopaedic surgeries), the hospital is located in the heart of Chennai City.', 
+    'The Orthopaedic and Joint Replacement department deals with trauma recovery, spinal injuries, minimally invasive bone restructuring, and joint replacement. Their specialized team coordinates home physical therapy and postoperative mobility programs in partnership with Ayusya.', 
+    'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    3
+  );
+
+-- 8. Admin User Account
+insert into auth.users (id, email, encrypted_password, email_confirmed_at, role, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values (
+  gen_random_uuid(),
+  'ayusyahomecare@gmail.com',
+  crypt('Chennai2018@', gen_salt('bf')),
+  now(),
+  'authenticated',
+  '{"provider": "email", "providers": ["email"]}',
+  '{}',
+  now(),
+  now()
+) on conflict do nothing;
+
+
+

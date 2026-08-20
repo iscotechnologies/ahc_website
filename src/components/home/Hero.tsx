@@ -2,14 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, Phone, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSettings } from '../../context/SettingsContext';
 
 export const Hero: React.FC = () => {
+  const { siteSettings } = useSettings();
+
+  const title = siteSettings?.hero_title || 'Best Home Health Care in Chennai, Trichy & Madurai';
+  const description = siteSettings?.hero_description || 'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.';
+  const imageUrl = siteSettings?.hero_image_url || 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80';
+
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-warm-900 text-white">
       {/* Background Image Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80"
+          src={imageUrl}
           alt="Ayusya Health Care Warm Service"
           className="h-full w-full object-cover object-center opacity-30"
         />
@@ -33,7 +40,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight"
           >
-            Best Home Health Care in Chennai, Trichy & Madurai
+            {title}
           </motion.h1>
 
           <motion.p
@@ -42,8 +49,9 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-base sm:text-lg text-warm-200 leading-relaxed max-w-xl"
           >
-            Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.
+            {description}
           </motion.p>
+
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}

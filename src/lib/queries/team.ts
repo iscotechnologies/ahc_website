@@ -41,3 +41,45 @@ export async function getHomeFeaturedTeamMembers(): Promise<TeamMember[]> {
   }
   return data || [];
 }
+
+export async function addTeamMember(member: Omit<TeamMember, 'id' | 'created_at'>): Promise<TeamMember> {
+  const { data, error } = await supabase
+    .from('team_members')
+    .insert([member])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding team member:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function updateTeamMember(id: string, member: Partial<TeamMember>): Promise<TeamMember> {
+  const { data, error } = await supabase
+    .from('team_members')
+    .update(member)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating team member:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function deleteTeamMember(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('team_members')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting team member:', error);
+    throw error;
+  }
+}
+

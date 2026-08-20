@@ -107,6 +107,31 @@ create table job_applications (
   created_at timestamptz default now()
 );
 
+-- 10. Site Settings (Single-Row Pattern)
+create table site_settings (
+  id int primary key default 1,
+  under_maintenance boolean default false,
+  marquee_notification text default '',
+  show_marquee boolean default false,
+  hero_title text default 'Best Home Health Care in Chennai, Trichy & Madurai',
+  hero_description text default 'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.',
+  hero_image_url text default 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80',
+  updated_at timestamptz default now(),
+  constraint check_single_row check (id = 1)
+);
+
+-- 11. Tie-up Hospitals / Partner Hospitals
+create table tieup_hospitals (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  subtitle text,
+  description text,
+  more_info text,
+  image_url text,
+  display_order int default 0,
+  created_at timestamptz default now()
+);
+
 -- =========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- =========================================
@@ -121,39 +146,112 @@ alter table contact_submissions enable row level security;
 alter table membership_submissions enable row level security;
 alter table referral_submissions enable row level security;
 alter table job_applications enable row level security;
+alter table site_settings enable row level security;
+alter table tieup_hospitals enable row level security;
 
--- 1. Services: Public Read-Only
+-- 1. Services: Public Read, Authenticated Write
 create policy "Enable select for anonymous users" on services
   for select to anon using (true);
+create policy "Enable select for authenticated users" on services
+  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on services
+  for all to authenticated using (true) with check (true);
 
--- 2. Team Members: Public Read-Only
+-- 2. Team Members: Public Read, Authenticated Write
 create policy "Enable select for anonymous users" on team_members
   for select to anon using (true);
+create policy "Enable select for authenticated users" on team_members
+  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on team_members
+  for all to authenticated using (true) with check (true);
 
--- 3. Testimonials: Public Read-Only
+-- 3. Testimonials: Public Read, Authenticated Write
 create policy "Enable select for anonymous users" on testimonials
   for select to anon using (true);
+create policy "Enable select for authenticated users" on testimonials
+  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on testimonials
+  for all to authenticated using (true) with check (true);
 
--- 4. Partners: Public Read-Only
+-- 4. Partners: Public Read, Authenticated Write
 create policy "Enable select for anonymous users" on partners
   for select to anon using (true);
+create policy "Enable select for authenticated users" on partners
+  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on partners
+  for all to authenticated using (true) with check (true);
 
--- 5. Job Openings: Public Read-Only
+-- 5. Job Openings: Public Read, Authenticated Write
 create policy "Enable select for anonymous users" on job_openings
   for select to anon using (true);
+create policy "Enable select for authenticated users" on job_openings
+  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on job_openings
+  for all to authenticated using (true) with check (true);
 
 -- 6. Contact Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on contact_submissions
   for insert to anon with check (true);
+create policy "Enable select for authenticated users" on contact_submissions
+  for select to authenticated using (true);
 
 -- 7. Membership Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on membership_submissions
   for insert to anon with check (true);
+create policy "Enable select for authenticated users" on membership_submissions
+  for select to authenticated using (true);
 
 -- 8. Referral Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on referral_submissions
   for insert to anon with check (true);
+create policy "Enable select for authenticated users" on referral_submissions
+  for select to authenticated using (true);
 
 -- 9. Job Applications: Public Insert-Only
 create policy "Enable insert for anonymous users" on job_applications
   for insert to anon with check (true);
+create policy "Enable select for authenticated users" on job_applications
+  for select to authenticated using (true);
+
+-- 10. Site Settings: Public Read, Authenticated Write
+create policy "Enable select for all users" on site_settings
+  for select using (true);
+create policy "Enable all for authenticated users" on site_settings
+  for all to authenticated using (true) with check (true);
+
+-- 11. Tie-up Hospitals: Public Read, Authenticated Write
+create policy "Enable select for all users" on tieup_hospitals
+  for select using (true);
+create policy "Enable all for authenticated users" on tieup_hospitals
+  for all to authenticated using (true) with check (true);
+
+-- =========================================
+-- STORAGE BUCKETS & POLICIES
+-- =========================================
+
+-- Create a public storage bucket named "photos" if not exists
+insert into storage.buckets (id, name, public)
+values ('photos', 'photos', true)
+on conflict (id) do nothing;
+
+-- Allow public access to read files in the "photos" bucket
+create policy "Allow public read access to photos"
+on storage.objects for select to public
+using ( bucket_id = 'photos' );
+
+-- Allow authenticated users to upload files to "photos" bucket
+create policy "Allow authenticated upload to photos"
+on storage.objects for insert to authenticated
+with check ( bucket_id = 'photos' );
+
+-- Allow authenticated users to update files in "photos" bucket
+create policy "Allow authenticated update to photos"
+on storage.objects for update to authenticated
+using ( bucket_id = 'photos' );
+
+-- Allow authenticated users to delete files from "photos" bucket
+create policy "Allow authenticated delete from photos"
+on storage.objects for delete to authenticated
+using ( bucket_id = 'photos' );
+
+
