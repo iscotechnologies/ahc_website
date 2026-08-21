@@ -367,7 +367,7 @@ export const About: React.FC = () => {
                 <div className="pt-4 flex flex-wrap gap-4 justify-center">
                   <Link
                     to="/contact"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-white px-5 py-3 text-xs font-bold text-primary-950 shadow hover:bg-primary-50 hover:shadow-md transition-all duration-200"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-white px-5 py-3 text-xs font-bold text-[#002e5d] shadow hover:bg-primary-50 hover:shadow-md transition-all duration-200"
                   >
                     Contact Our Office
                     <ArrowRight className="h-4 w-4" />

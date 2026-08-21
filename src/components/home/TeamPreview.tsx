@@ -168,7 +168,7 @@ export const TeamPreview: React.FC = () => {
         <div className="mt-12">
           <Link
             to="/team/clinical-associates"
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-primary-950 hover:bg-primary-50 transition-colors shadow-md outline-none"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#002e5d] hover:bg-primary-50 transition-colors shadow-md outline-none"
           >
             Meet All Clinical Associates
           </Link>

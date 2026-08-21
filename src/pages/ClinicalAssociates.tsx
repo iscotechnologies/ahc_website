@@ -294,7 +294,7 @@ export const ClinicalAssociates: React.FC = () => {
                         </div>
                         <Link
                           to="/contact"
-                          className="inline-flex items-center gap-1 rounded-xl bg-white px-4 py-2 text-xs font-bold text-primary-950 hover:bg-primary-50 transition-colors outline-none"
+                          className="inline-flex items-center gap-1 rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#002e5d] hover:bg-primary-50 transition-colors outline-none"
                         >
                           Consult Doctor
                         </Link>
@@ -411,7 +411,7 @@ export const ClinicalAssociates: React.FC = () => {
                   <div className="pt-2">
                     <Link
                       to="/contact"
-                      className="rounded-xl bg-white px-4 py-2 text-xs font-bold text-primary-950 hover:bg-primary-50 transition-colors inline-block"
+                      className="rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#002e5d] hover:bg-primary-50 transition-colors inline-block"
                     >
                       Book Consultation
                     </Link>
