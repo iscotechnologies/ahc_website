@@ -112,7 +112,7 @@ const fallbackDetails: Record<string, FallbackDetail> = {
     short: 'Premium medical equipment rentals and sales for home ICU and recovery needs.',
     long: 'We supply high-quality medical equipment for rent or purchase to support home care. Our inventory includes oxygen concentrators, hospital beds (manual & motorized), wheelchairs, bi-pap/cpap machines, patient monitors, deep vein thrombosis (DVT) pumps, and suction machines. We offer quick delivery, installation, and usage training for families.',
     icon: 'Wrench',
-    image: 'https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80',
     inclusions: [
       'Oxygen concentrator rental and sales (5L / 10L)',
       'Motorized & manual hospital bed rentals',

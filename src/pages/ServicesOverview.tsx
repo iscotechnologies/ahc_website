@@ -78,7 +78,7 @@ const fallbackServices: Service[] = [
     title: "Medical Equipment's",
     short_description: 'Premium medical equipment rentals and sales for home ICU and recovery needs.',
     full_description: '',
-    hero_image_url: 'https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=600&q=80',
+    hero_image_url: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80',
     icon: 'Wrench',
     display_order: 7,
     created_at: '',
