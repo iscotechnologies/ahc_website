@@ -179,7 +179,10 @@ export const ServiceDetailPage: React.FC = () => {
   const displayTitle = service?.title || fallback.title;
   const displayShort = service?.short_description || fallback.short;
   const displayLong = service?.full_description || fallback.long;
-  const displayImage = service?.hero_image_url || fallback.image;
+  let displayImage = service?.hero_image_url || fallback.image;
+  if (displayImage && displayImage.includes('photo-153002640518')) {
+    displayImage = 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80';
+  }
   const displayIcon = service?.icon || fallback.icon;
   const inclusions = fallback?.inclusions || [
     'Professional coordinates under clinical manager instructions',

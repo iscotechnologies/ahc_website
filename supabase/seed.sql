@@ -69,7 +69,7 @@ values
     'Medical Equipment''s',
     'Premium medical equipment rentals and sales for home ICU and recovery needs.',
     'We supply high-quality medical equipment for rent or purchase to support home care. Our inventory includes oxygen concentrators, hospital beds (manual & motorized), wheelchairs, bi-pap/cpap machines, patient monitors, and deep vein thrombosis (DVT) pumps. We offer quick delivery, installation, and usage training for families.',
-    'https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80',
     'Wrench',
     7
   );

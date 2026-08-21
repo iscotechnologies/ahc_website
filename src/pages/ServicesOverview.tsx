@@ -159,7 +159,9 @@ export const ServicesOverview: React.FC = () => {
                       {/* Image container */}
                       <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-warm-50">
                         <img
-                          src={service.hero_image_url}
+                          src={service.hero_image_url && service.hero_image_url.includes('photo-153002640518') 
+                            ? 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80'
+                            : service.hero_image_url}
                           alt={service.title}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
