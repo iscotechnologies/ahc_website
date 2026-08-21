@@ -2,11 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { updateSettings, SiteSettings } from '../../lib/queries/settings';
+import { supabase } from '../../lib/supabaseClient';
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, TeamMember } from '../../lib/queries/team';
 import { getTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, Testimonial } from '../../lib/queries/testimonials';
 import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } from '../../lib/queries/hospitals';
 import { uploadPhoto } from '../../lib/queries/storage';
-import { getContactSubmissions, updateContactSubmission, deleteContactSubmission, ContactSubmission } from '../../lib/queries/submissions';
+import { 
+  getContactSubmissions, 
+  updateContactSubmission, 
+  deleteContactSubmission, 
+  ContactSubmission,
+  getMembershipSubmissions,
+  updateMembershipSubmission,
+  deleteMembershipSubmission,
+  MembershipSubmission
+} from '../../lib/queries/submissions';
+import { 
+  getAllJobOpenings, 
+  addJobOpening, 
+  updateJobOpening, 
+  deleteJobOpening, 
+  getJobApplications, 
+  updateJobApplication, 
+  deleteJobApplication, 
+  JobOpening, 
+  JobApplication 
+} from '../../lib/queries/jobs';
 import { useToast } from '../../components/shared/Toast';
 import { 
   Settings, 
@@ -24,7 +45,10 @@ import {
   AlertTriangle,
   Play,
   Globe,
-  Inbox
+  Inbox,
+  Briefcase,
+  FileText,
+  Shield
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -111,7 +135,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'home' | 'doctors' | 'youtube' | 'hospitals'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'home' | 'doctors' | 'youtube' | 'hospitals'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -133,6 +157,11 @@ export const Dashboard: React.FC = () => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [enquiries, setEnquiries] = useState<ContactSubmission[]>([]);
   const [enquiryFilter, setEnquiryFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
+  const [membershipSubs, setMembershipSubs] = useState<MembershipSubmission[]>([]);
+  const [membershipFilter, setMembershipFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
+  const [allJobs, setAllJobs] = useState<JobOpening[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [appFilter, setAppFilter] = useState<'All' | 'New' | 'Reviewed' | 'Interviewed' | 'Hired' | 'Rejected'>('All');
   const [loadingData, setLoadingData] = useState(false);
 
   // Modals / Edit states
@@ -140,6 +169,9 @@ export const Dashboard: React.FC = () => {
   const [youtubeForm, setYoutubeForm] = useState<Partial<Testimonial> | null>(null);
   const [hospitalForm, setHospitalForm] = useState<Partial<Hospital> | null>(null);
   const [enquiryForm, setEnquiryForm] = useState<ContactSubmission | null>(null);
+  const [membershipForm, setMembershipForm] = useState<MembershipSubmission | null>(null);
+  const [jobForm, setJobForm] = useState<Partial<JobOpening> | null>(null);
+  const [applicationForm, setApplicationForm] = useState<JobApplication | null>(null);
 
   // Load configuration initially
   useEffect(() => {
@@ -173,6 +205,15 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'enquiries') {
         const data = await getContactSubmissions();
         setEnquiries(data);
+      } else if (activeTab === 'memberships') {
+        const data = await getMembershipSubmissions();
+        setMembershipSubs(data);
+      } else if (activeTab === 'jobs') {
+        const data = await getAllJobOpenings();
+        setAllJobs(data);
+      } else if (activeTab === 'applications') {
+        const data = await getJobApplications();
+        setApplications(data);
       }
     } catch (err) {
       console.error(err);
@@ -382,6 +423,100 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleSaveMembershipSub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!membershipForm) return;
+
+    try {
+      await updateMembershipSubmission(membershipForm.id, {
+        status: membershipForm.status,
+        remarks: membershipForm.remarks || '',
+      });
+      showToast('Membership enrollment details updated successfully!', 'success');
+      setMembershipForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to update membership details.', 'error');
+    }
+  };
+
+  const handleDeleteMembershipSub = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this membership enrollment record?')) return;
+    try {
+      await deleteMembershipSubmission(id);
+      showToast('Membership enrollment record deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete membership record.', 'error');
+    }
+  };
+
+  const handleSaveJobOpening = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!jobForm || !jobForm.title) return;
+
+    try {
+      const payload = {
+        title: jobForm.title,
+        location: jobForm.location || '',
+        employment_type: jobForm.employment_type || 'Full-Time',
+        description: jobForm.description || '',
+        is_active: jobForm.is_active ?? true,
+      };
+
+      if (jobForm.id) {
+        await updateJobOpening(jobForm.id, payload);
+        showToast('Job opening updated successfully!', 'success');
+      } else {
+        await addJobOpening(payload);
+        showToast('New job opening posted successfully!', 'success');
+      }
+      setJobForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to save job opening.', 'error');
+    }
+  };
+
+  const handleDeleteJobOpening = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this job opening? Candidates will no longer be able to apply to it.')) return;
+    try {
+      await deleteJobOpening(id);
+      showToast('Job opening deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete job opening.', 'error');
+    }
+  };
+
+  const handleSaveJobApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applicationForm) return;
+
+    try {
+      await updateJobApplication(applicationForm.id, {
+        status: applicationForm.status,
+        remarks: applicationForm.remarks || '',
+      });
+      showToast('Candidate application details updated successfully!', 'success');
+      setApplicationForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to update candidate application.', 'error');
+    }
+  };
+
+  const handleDeleteJobApplication = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this candidate application?')) return;
+    try {
+      await deleteJobApplication(id);
+      showToast('Candidate application deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete candidate application.', 'error');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-warm-50 text-warm-850">
       {/* Sidebar Navigation */}
@@ -422,6 +557,42 @@ export const Dashboard: React.FC = () => {
             >
               <Inbox className="h-4.5 w-4.5" />
               <span>Enquiries</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('memberships')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'memberships' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Shield className="h-4.5 w-4.5" />
+              <span>Membership Enrollments</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('jobs')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'jobs' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Briefcase className="h-4.5 w-4.5" />
+              <span>Manage Jobs</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'applications' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <FileText className="h-4.5 w-4.5" />
+              <span>Job Applications</span>
             </button>
 
             <button
@@ -506,6 +677,9 @@ export const Dashboard: React.FC = () => {
             <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-900 capitalize">
               {activeTab === 'settings' && 'General Settings'}
               {activeTab === 'enquiries' && 'Customer Enquiries'}
+              {activeTab === 'memberships' && 'Membership Enrollments'}
+              {activeTab === 'jobs' && 'Manage Job Postings'}
+              {activeTab === 'applications' && 'Candidate Job Applications'}
               {activeTab === 'home' && 'Home Page Hero Section'}
               {activeTab === 'doctors' && 'Doctor Advisory Panel'}
               {activeTab === 'youtube' && 'Patient YouTube Stories'}
@@ -514,6 +688,9 @@ export const Dashboard: React.FC = () => {
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
               {activeTab === 'enquiries' && 'View consultation requests, update status, and manage client follow-up remarks.'}
+              {activeTab === 'memberships' && 'View and manage annual membership application requests, status, and remarks.'}
+              {activeTab === 'jobs' && 'Create, modify, toggle active status, or delete job vacancy postings.'}
+              {activeTab === 'applications' && 'View candidate details, read cover notes, download resume documents, and add recruitment notes.'}
               {activeTab === 'home' && 'Update the primary text banner and main background visuals for visitors.'}
               {activeTab === 'doctors' && 'Create, modify, or delete profiles of medical advisors and clinicians.'}
               {activeTab === 'youtube' && 'Manage patients video stories and YouTube video IDs on the homepage.'}
@@ -535,6 +712,277 @@ export const Dashboard: React.FC = () => {
 
         {/* Tab contents window */}
         <div className="grow p-6 md:p-8 overflow-y-auto">
+          {/* TAB: MEMBERSHIPS */}
+          {activeTab === 'memberships' && (
+            <div className="space-y-6">
+              {/* Filter and stats header */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <div className="flex flex-wrap gap-1.5">
+                  {(['All', 'Pending', 'In Progress', 'Completed', 'Cancelled'] as const).map((status) => {
+                    const count = status === 'All' 
+                      ? membershipSubs.length 
+                      : membershipSubs.filter((m) => m.status === status).length;
+                    
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setMembershipFilter(status)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          membershipFilter === status
+                            ? 'bg-primary-600 text-white shadow-xs'
+                            : 'bg-warm-50 text-warm-600 hover:bg-warm-100 hover:text-warm-900'
+                        }`}
+                      >
+                        {status} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Edit remarks/status form modal if selected */}
+              {membershipForm && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-warm-950/40 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
+                  <div className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 text-left animate-fadeIn">
+                    <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                      <h3 className="text-base font-bold text-warm-950">
+                        Take Action & Remarks
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setMembershipForm(null)}
+                        className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4 text-xs sm:text-sm text-warm-800 font-sans">
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Client Name</p>
+                        <p className="font-semibold text-warm-950 mt-0.5 font-serif">{membershipForm.name}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Phone</p>
+                          <a href={`tel:${membershipForm.phone}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                            {membershipForm.phone}
+                          </a>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Email</p>
+                          {membershipForm.email ? (
+                            <a href={`mailto:${membershipForm.email}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                              {membershipForm.email}
+                            </a>
+                          ) : (
+                            <p className="text-warm-400 italic mt-0.5">Not provided</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Selected Plan Tier</p>
+                          <p className="font-bold text-primary-700 mt-0.5">{membershipForm.plan_tier || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Preferred Start Date</p>
+                          <p className="font-medium text-warm-900 mt-0.5">
+                            {membershipForm.preferred_start_date 
+                              ? new Date(membershipForm.preferred_start_date).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })
+                              : 'Immediate'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Residential Address</p>
+                        <div className="bg-warm-50 border border-warm-150 p-3 rounded-xl text-warm-700 leading-relaxed max-h-36 overflow-y-auto mt-0.5 font-medium whitespace-pre-wrap">
+                          {membershipForm.address || <span className="italic text-warm-400">No address provided.</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleSaveMembershipSub} className="space-y-4 pt-2 border-t border-warm-100 text-left font-sans">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Processing Status
+                        </label>
+                        <select
+                          value={membershipForm.status}
+                          onChange={(e) => setMembershipForm({ ...membershipForm, status: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Remarks / Follow-up Notes
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={membershipForm.remarks || ''}
+                          placeholder="Add comments on customer conversation, setup process, clinical coordinates, etc..."
+                          onChange={(e) => setMembershipForm({ ...membershipForm, remarks: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2 text-xs font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setMembershipForm(null)}
+                          className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span>Save Changes</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-sans">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Received Date</th>
+                          <th className="px-6 py-4">Client Details</th>
+                          <th className="px-6 py-4">Plan Tier</th>
+                          <th className="px-6 py-4">Start Date</th>
+                          <th className="px-6 py-4">Residential Address</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4">Remarks</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {(() => {
+                          const filtered = membershipFilter === 'All' 
+                            ? membershipSubs 
+                            : membershipSubs.filter((m) => m.status === membershipFilter);
+
+                          if (filtered.length === 0) {
+                            return (
+                              <tr>
+                                <td colSpan={8} className="px-6 py-10 text-center text-warm-400 font-medium">
+                                  No membership enrollments found for this filter.
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return filtered.map((item) => {
+                            const dateStr = new Date(item.created_at).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+
+                            const startStr = item.preferred_start_date 
+                              ? new Date(item.preferred_start_date).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
+                              : '-';
+
+                            return (
+                              <tr key={item.id} className="hover:bg-warm-50/50 align-top">
+                                <td className="px-6 py-4 font-medium text-warm-500 whitespace-nowrap">{dateStr}</td>
+                                <td className="px-6 py-4">
+                                  <div className="space-y-0.5">
+                                    <p className="font-bold text-warm-900 font-serif text-sm">{item.name}</p>
+                                    <p className="font-semibold text-warm-650">
+                                      <a href={`tel:${item.phone}`} className="hover:text-primary-600 transition-colors">
+                                        {item.phone}
+                                      </a>
+                                    </p>
+                                    {item.email && (
+                                      <p className="text-warm-500">
+                                        <a href={`mailto:${item.email}`} className="hover:text-primary-600 transition-colors">
+                                          {item.email}
+                                        </a>
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 font-bold text-primary-700 whitespace-nowrap">{item.plan_tier}</td>
+                                <td className="px-6 py-4 font-semibold text-warm-700 whitespace-nowrap">{startStr}</td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs">
+                                  <p className="line-clamp-3 whitespace-pre-wrap">{item.address || '-'}</p>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    item.status === 'Pending' 
+                                      ? 'bg-amber-50 text-amber-800 border-amber-200' 
+                                      : item.status === 'In Progress' 
+                                      ? 'bg-blue-50 text-blue-800 border-blue-200' 
+                                      : item.status === 'Completed' 
+                                      ? 'bg-green-50 text-green-800 border-green-200' 
+                                      : 'bg-warm-100 text-warm-600 border-warm-250'
+                                  }`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs">
+                                  <p className="line-clamp-3 whitespace-pre-wrap">{item.remarks || <span className="text-warm-450 italic font-normal">None</span>}</p>
+                                </td>
+                                <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                  <button
+                                    onClick={() => setMembershipForm(item)}
+                                    title="Take Action"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteMembershipSub(item.id)}
+                                    title="Delete record"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TAB 0: ENQUIRIES */}
           {activeTab === 'enquiries' && (
             <div className="space-y-6 font-serif">
@@ -785,6 +1233,503 @@ export const Dashboard: React.FC = () => {
                               </tr>
                             );
                           })
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: CAREERS / JOBS */}
+          {activeTab === 'jobs' && (
+            <div className="space-y-6">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Active Career Vacancies ({allJobs.length} listings)
+                </p>
+                <button
+                  onClick={() => setJobForm({ title: '', location: 'Chennai', employment_type: 'Full-Time', description: '', is_active: true })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Post New Job</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {jobForm && (
+                <form onSubmit={handleSaveJobOpening} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md text-left space-y-6 animate-fadeIn font-sans">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                    <h3 className="text-base font-bold text-warm-950">
+                      {jobForm.id ? `Edit Job Posting: ${jobForm.title}` : 'Post New Job Vacancy'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setJobForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Job Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Senior Home Care Nurse"
+                        value={jobForm.title || ''}
+                        onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Location</label>
+                      <select
+                        value={jobForm.location || 'Chennai'}
+                        onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
+                      >
+                        <option value="Chennai">Chennai</option>
+                        <option value="Trichy">Trichy</option>
+                        <option value="Madurai">Madurai</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Employment Type</label>
+                      <select
+                        value={jobForm.employment_type || 'Full-Time'}
+                        onChange={(e) => setJobForm({ ...jobForm, employment_type: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
+                      >
+                        <option value="Full-Time">Full-Time</option>
+                        <option value="Part-Time">Part-Time</option>
+                        <option value="Contract">Contract</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Job Description</label>
+                      <textarea
+                        rows={5}
+                        required
+                        placeholder="Detail the key responsibilities, qualification requirements, shifts, and compensation details..."
+                        value={jobForm.description || ''}
+                        onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Active Status Toggle */}
+                    <div className="flex items-center gap-3 sm:col-span-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setJobForm({ ...jobForm, is_active: !jobForm.is_active })}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          jobForm.is_active ? 'bg-primary-600' : 'bg-warm-200'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            jobForm.is_active ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                      <span className="text-xs font-bold text-warm-700 uppercase tracking-wider">
+                        Show on careers page (Active Listing)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-warm-100 flex justify-end gap-2 text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setJobForm(null)}
+                      className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{jobForm.id ? 'Update Job' : 'Post Job'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-sans">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4 font-serif">Job Title</th>
+                          <th className="px-6 py-4">Location</th>
+                          <th className="px-6 py-4">Type</th>
+                          <th className="px-6 py-4">Description</th>
+                          <th className="px-6 py-4 text-center">Status</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {allJobs.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No job openings found. Click "Post New Job" to create one.
+                            </td>
+                          </tr>
+                        ) : (
+                          allJobs.map((job) => (
+                            <tr key={job.id} className="hover:bg-warm-50/50 align-top">
+                              <td className="px-6 py-4 font-bold text-warm-900 font-serif text-sm max-w-xs">{job.title}</td>
+                              <td className="px-6 py-4 text-warm-750 font-bold">{job.location || 'Chennai'}</td>
+                              <td className="px-6 py-4 font-semibold text-primary-700">{job.employment_type || 'Full-Time'}</td>
+                              <td className="px-6 py-4 text-warm-600 font-medium max-w-md">
+                                <p className="line-clamp-2">{job.description}</p>
+                              </td>
+                              <td className="px-6 py-4 text-center whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  job.is_active 
+                                    ? 'bg-green-50 text-green-800 border-green-200' 
+                                    : 'bg-warm-100 text-warm-600 border-warm-250'
+                                }`}>
+                                  {job.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setJobForm(job)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteJobOpening(job.id)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: JOB APPLICATIONS */}
+          {activeTab === 'applications' && (
+            <div className="space-y-6">
+              {/* Filter and stats header */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <div className="flex flex-wrap gap-1.5">
+                  {(['All', 'New', 'Reviewed', 'Interviewed', 'Hired', 'Rejected'] as const).map((status) => {
+                    const count = status === 'All' 
+                      ? applications.length 
+                      : applications.filter((a) => a.status === status).length;
+                    
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setAppFilter(status)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          appFilter === status
+                            ? 'bg-primary-600 text-white shadow-xs'
+                            : 'bg-warm-50 text-warm-600 hover:bg-warm-100 hover:text-warm-900'
+                        }`}
+                      >
+                        {status} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Edit/Action modal if selected */}
+              {applicationForm && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-warm-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 text-left animate-fadeIn">
+                    <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                      <h3 className="text-base font-bold text-warm-950">
+                        Review Job Application
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setApplicationForm(null)}
+                        className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4 text-xs sm:text-sm text-warm-800 font-sans">
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Candidate Name</p>
+                        <p className="font-bold text-warm-950 mt-0.5 font-serif text-base">{applicationForm.name}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Phone</p>
+                          <a href={`tel:${applicationForm.phone}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                            {applicationForm.phone}
+                          </a>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Email</p>
+                          <a href={`mailto:${applicationForm.email}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                            {applicationForm.email}
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Applied Position</p>
+                          <p className="font-semibold text-primary-700 mt-0.5 font-serif">
+                            {applicationForm.job_openings?.title || 'General Application'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Applied Date</p>
+                          <p className="font-medium text-warm-800 mt-0.5">
+                            {new Date(applicationForm.created_at).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Cover Note */}
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Cover Note / Remarks from Candidate</p>
+                        <div className="bg-warm-50 border border-warm-150 p-3 rounded-xl text-warm-700 leading-relaxed max-h-32 overflow-y-auto mt-0.5 font-medium whitespace-pre-wrap">
+                          {applicationForm.cover_note || <span className="italic text-warm-400">No cover note provided.</span>}
+                        </div>
+                      </div>
+
+                      {/* Resume Download / View */}
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider">Candidate Resume</p>
+                        {applicationForm.resume_url ? (
+                          <div className="mt-1 flex items-center gap-2">
+                            <a
+                              href={supabase.storage.from('resumes').getPublicUrl(applicationForm.resume_url).data.publicUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-warm-100 border border-warm-250 text-warm-850 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 px-4 py-2 text-xs font-bold transition-all shadow-xs cursor-pointer font-sans"
+                            >
+                              <FileText className="h-4.5 w-4.5" />
+                              <span>View & Download Resume</span>
+                            </a>
+                            <span className="text-[10px] text-warm-455 italic">Stored in resumes bucket</span>
+                          </div>
+                        ) : (
+                          <p className="text-red-500 font-semibold mt-0.5">No resume file attached.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleSaveJobApplication} className="space-y-4 pt-2 border-t border-warm-100 text-left font-sans">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Recruitment Status
+                        </label>
+                        <select
+                          value={applicationForm.status}
+                          onChange={(e) => setApplicationForm({ ...applicationForm, status: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
+                        >
+                          <option value="New">New</option>
+                          <option value="Reviewed">Reviewed</option>
+                          <option value="Interviewed">Interviewed</option>
+                          <option value="Hired">Hired</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Recruiter Notes / Remarks
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={applicationForm.remarks || ''}
+                          placeholder="Add comments on candidate screening, experience matches, interview dates, etc..."
+                          onChange={(e) => setApplicationForm({ ...applicationForm, remarks: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2 text-xs font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setApplicationForm(null)}
+                          className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span>Save Changes</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs font-sans">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-sans">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Applied Date</th>
+                          <th className="px-6 py-4">Candidate</th>
+                          <th className="px-6 py-4">Position</th>
+                          <th className="px-6 py-4">Cover Note</th>
+                          <th className="px-6 py-4">Resume</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4">Admin Remarks</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {(() => {
+                          const filtered = appFilter === 'All' 
+                            ? applications 
+                            : applications.filter((a) => a.status === appFilter);
+
+                          if (filtered.length === 0) {
+                            return (
+                              <tr>
+                                <td colSpan={8} className="px-6 py-10 text-center text-warm-400 font-medium font-sans">
+                                  No candidate applications found for this filter.
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return filtered.map((item) => {
+                            const dateStr = new Date(item.created_at).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+
+                            const resumeLink = item.resume_url 
+                              ? supabase.storage.from('resumes').getPublicUrl(item.resume_url).data.publicUrl
+                              : null;
+
+                            return (
+                              <tr key={item.id} className="hover:bg-warm-50/50 align-top">
+                                <td className="px-6 py-4 font-medium text-warm-500 whitespace-nowrap">{dateStr}</td>
+                                <td className="px-6 py-4">
+                                  <div className="space-y-0.5">
+                                    <p className="font-bold text-warm-900 font-serif text-sm">{item.name}</p>
+                                    <p className="font-semibold text-warm-650">
+                                      <a href={`tel:${item.phone}`} className="hover:text-primary-600 transition-colors">
+                                        {item.phone}
+                                      </a>
+                                    </p>
+                                    <p className="text-warm-500">
+                                      <a href={`mailto:${item.email}`} className="hover:text-primary-600 transition-colors">
+                                        {item.email}
+                                      </a>
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 font-semibold text-primary-700 font-serif max-w-xs">
+                                  {item.job_openings?.title || <span className="text-warm-400 font-medium italic font-sans">General Application</span>}
+                                </td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs">
+                                  <p className="line-clamp-3 whitespace-pre-wrap">{item.cover_note || '-'}</p>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  {resumeLink ? (
+                                    <a
+                                      href={resumeLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-800 font-bold hover:underline"
+                                    >
+                                      <FileText className="h-3.5 w-3.5" />
+                                      <span>Download</span>
+                                    </a>
+                                  ) : (
+                                    <span className="text-red-500 font-bold">No file</span>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap font-sans">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    item.status === 'New' 
+                                      ? 'bg-amber-50 text-amber-800 border-amber-200' 
+                                      : item.status === 'Reviewed' 
+                                      ? 'bg-blue-50 text-blue-800 border-blue-200' 
+                                      : item.status === 'Interviewed'
+                                      ? 'bg-purple-50 text-purple-800 border-purple-200'
+                                      : item.status === 'Hired' 
+                                      ? 'bg-green-50 text-green-800 border-green-200' 
+                                      : 'bg-rose-50 text-rose-800 border-rose-200'
+                                  }`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs font-sans">
+                                  <p className="line-clamp-3 whitespace-pre-wrap">{item.remarks || <span className="text-warm-450 italic font-normal">None</span>}</p>
+                                </td>
+                                <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                  <button
+                                    onClick={() => setApplicationForm(item)}
+                                    title="Review Application"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteJobApplication(item.id)}
+                                    title="Delete candidate application log"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          });
                         })()}
                       </tbody>
                     </table>

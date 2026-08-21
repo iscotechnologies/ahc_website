@@ -286,5 +286,34 @@ values
   )
 on conflict (id) do nothing;
 
+-- 10. Mock Membership Submissions (Enrollments)
+insert into membership_submissions (id, name, phone, email, address, plan_tier, preferred_start_date, status, remarks, created_at)
+values
+  (
+    '44444444-4444-4444-4444-444444444444',
+    'Vinodhan',
+    '9944594144',
+    'vinodhan@example.com',
+    'No 12, Gandhi Street, Chennai 600028',
+    'Silver Tier (₹2,500/mo)',
+    '2026-08-21',
+    'Pending',
+    '',
+    now() - interval '1 hour'
+  ),
+  (
+    '55555555-5555-5555-5555-555555555555',
+    'Karthik Raja',
+    '9123456789',
+    'karthik@gmail.com',
+    'Plot 45, Anna Nagar, Madurai 625020',
+    'Gold Tier (₹5,000/mo)',
+    '2026-09-01',
+    'In Progress',
+    'Spoke to Karthik. He wants Gold plan starting Sept 1st. Payment links sent.',
+    now() - interval '2 days'
+  )
+on conflict (id) do nothing;
+
 
 

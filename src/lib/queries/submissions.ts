@@ -119,3 +119,53 @@ export async function deleteContactSubmission(id: string): Promise<void> {
     throw error;
   }
 }
+
+export interface MembershipSubmission {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  address: string | null;
+  plan_tier: string | null;
+  preferred_start_date: string | null;
+  status: string;
+  remarks: string | null;
+  created_at: string;
+}
+
+export async function getMembershipSubmissions(): Promise<MembershipSubmission[]> {
+  const { data, error } = await supabase
+    .from('membership_submissions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching membership submissions:', error);
+    throw error;
+  }
+  return data || [];
+}
+
+export async function updateMembershipSubmission(id: string, updates: Partial<MembershipSubmission>): Promise<void> {
+  const { error } = await supabase
+    .from('membership_submissions')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating membership submission:', error);
+    throw error;
+  }
+}
+
+export async function deleteMembershipSubmission(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('membership_submissions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting membership submission:', error);
+    throw error;
+  }
+}

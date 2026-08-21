@@ -82,6 +82,8 @@ create table membership_submissions (
   address text,
   plan_tier text,
   preferred_start_date date,
+  status text not null default 'Pending',
+  remarks text default '',
   created_at timestamptz default now()
 );
 
@@ -106,6 +108,8 @@ create table job_applications (
   phone text not null,
   resume_url text,
   cover_note text,
+  status text not null default 'New',
+  remarks text default '',
   created_at timestamptz default now()
 );
 
@@ -197,11 +201,11 @@ create policy "Enable insert for anonymous users" on contact_submissions
 create policy "Enable all for authenticated users" on contact_submissions
   for all to authenticated using (true) with check (true);
 
--- 7. Membership Submissions: Public Insert-Only
+-- 7. Membership Submissions: Public Insert-Only & Authenticated Manage
 create policy "Enable insert for anonymous users" on membership_submissions
   for insert to anon with check (true);
-create policy "Enable select for authenticated users" on membership_submissions
-  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on membership_submissions
+  for all to authenticated using (true) with check (true);
 
 -- 8. Referral Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on referral_submissions
@@ -209,11 +213,11 @@ create policy "Enable insert for anonymous users" on referral_submissions
 create policy "Enable select for authenticated users" on referral_submissions
   for select to authenticated using (true);
 
--- 9. Job Applications: Public Insert-Only
+-- 9. Job Applications: Public Insert-Only & Authenticated Manage
 create policy "Enable insert for anonymous users" on job_applications
   for insert to anon with check (true);
-create policy "Enable select for authenticated users" on job_applications
-  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on job_applications
+  for all to authenticated using (true) with check (true);
 
 -- 10. Site Settings: Public Read, Authenticated Write
 create policy "Enable select for all users" on site_settings
@@ -255,5 +259,26 @@ using ( bucket_id = 'photos' );
 create policy "Allow authenticated delete from photos"
 on storage.objects for delete to authenticated
 using ( bucket_id = 'photos' );
+
+-- Create a public storage bucket named "resumes" if not exists
+insert into storage.buckets (id, name, public)
+values ('resumes', 'resumes', true)
+on conflict (id) do nothing;
+
+-- Allow public access to read files in the "resumes" bucket
+create policy "Allow public read access to resumes"
+on storage.objects for select to public
+using ( bucket_id = 'resumes' );
+
+-- Allow anonymous users to upload files to "resumes" bucket
+create policy "Allow anonymous upload to resumes"
+on storage.objects for insert to anon
+with check ( bucket_id = 'resumes' );
+
+-- Allow authenticated users to manage files in "resumes" bucket
+create policy "Allow authenticated all access to resumes"
+on storage.objects for all to authenticated
+using ( bucket_id = 'resumes' )
+with check ( bucket_id = 'resumes' );
 
 
