@@ -245,5 +245,46 @@ values (
   now()
 ) on conflict do nothing;
 
+-- 9. Mock Contact Submissions (Enquiries)
+insert into contact_submissions (id, name, phone, email, location, service_interested, message, status, remarks, created_at)
+values
+  (
+    '11111111-1111-1111-1111-111111111111',
+    'Ramesh Kumar',
+    '9876543210',
+    'ramesh@gmail.com',
+    'Chennai',
+    'e961ff7e-ef0c-430c-ab2f-1d899557ea71',
+    'Need a reliable caretaker for my 82-year-old grandfather who is post-surgical.',
+    'Pending',
+    '',
+    now() - interval '2 hours'
+  ),
+  (
+    '22222222-2222-2222-2222-222222222222',
+    'Suresh Raina',
+    '9988776655',
+    'suresh.raina@yahoo.com',
+    'Trichy',
+    'd2b70f08-7261-4de2-bf56-11f81cfef1ea',
+    'Looking for a nurse to visit home daily for injection and wound dressing.',
+    'In Progress',
+    'Called Suresh, scheduled initial visit for tomorrow morning.',
+    now() - interval '1 day'
+  ),
+  (
+    '33333333-3333-3333-3333-333333333333',
+    'Anitha Raj',
+    '8877665544',
+    'anitha@outlook.com',
+    'Madurai',
+    'c3ab5ad1-3bfd-466d-88b9-50c9f131a473',
+    'Need a general physician doctor visit for routine elderly health checkup.',
+    'Completed',
+    'Doctor visit completed by Dr. Ravindra Nath on 20th Aug. Patient stable.',
+    now() - interval '3 days'
+  )
+on conflict (id) do nothing;
+
 
 

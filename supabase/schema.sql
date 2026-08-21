@@ -68,6 +68,8 @@ create table contact_submissions (
   location text,
   service_interested uuid references services(id) on delete set null,
   message text,
+  status text not null default 'Pending',
+  remarks text default '',
   created_at timestamptz default now()
 );
 
@@ -189,11 +191,11 @@ create policy "Enable select for authenticated users" on job_openings
 create policy "Enable all for authenticated users" on job_openings
   for all to authenticated using (true) with check (true);
 
--- 6. Contact Submissions: Public Insert-Only
+-- 6. Contact Submissions: Public Insert-Only & Authenticated Manage
 create policy "Enable insert for anonymous users" on contact_submissions
   for insert to anon with check (true);
-create policy "Enable select for authenticated users" on contact_submissions
-  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on contact_submissions
+  for all to authenticated using (true) with check (true);
 
 -- 7. Membership Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on membership_submissions

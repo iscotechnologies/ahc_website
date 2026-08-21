@@ -6,6 +6,7 @@ import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, Team
 import { getTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, Testimonial } from '../../lib/queries/testimonials';
 import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } from '../../lib/queries/hospitals';
 import { uploadPhoto } from '../../lib/queries/storage';
+import { getContactSubmissions, updateContactSubmission, deleteContactSubmission, ContactSubmission } from '../../lib/queries/submissions';
 import { useToast } from '../../components/shared/Toast';
 import { 
   Settings, 
@@ -22,7 +23,8 @@ import {
   X,
   AlertTriangle,
   Play,
-  Globe
+  Globe,
+  Inbox
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -109,7 +111,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'home' | 'doctors' | 'youtube' | 'hospitals'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'home' | 'doctors' | 'youtube' | 'hospitals'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -129,12 +131,15 @@ export const Dashboard: React.FC = () => {
   const [doctors, setDoctors] = useState<TeamMember[]>([]);
   const [youtubeLinks, setYoutubeLinks] = useState<Testimonial[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [enquiries, setEnquiries] = useState<ContactSubmission[]>([]);
+  const [enquiryFilter, setEnquiryFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
   const [loadingData, setLoadingData] = useState(false);
 
   // Modals / Edit states
   const [doctorForm, setDoctorForm] = useState<Partial<TeamMember> | null>(null);
   const [youtubeForm, setYoutubeForm] = useState<Partial<Testimonial> | null>(null);
   const [hospitalForm, setHospitalForm] = useState<Partial<Hospital> | null>(null);
+  const [enquiryForm, setEnquiryForm] = useState<ContactSubmission | null>(null);
 
   // Load configuration initially
   useEffect(() => {
@@ -165,6 +170,9 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'hospitals') {
         const data = await getHospitals();
         setHospitals(data);
+      } else if (activeTab === 'enquiries') {
+        const data = await getContactSubmissions();
+        setEnquiries(data);
       }
     } catch (err) {
       console.error(err);
@@ -346,6 +354,34 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleSaveEnquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enquiryForm) return;
+
+    try {
+      await updateContactSubmission(enquiryForm.id, {
+        status: enquiryForm.status,
+        remarks: enquiryForm.remarks || '',
+      });
+      showToast('Enquiry details updated successfully!', 'success');
+      setEnquiryForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to update enquiry details.', 'error');
+    }
+  };
+
+  const handleDeleteEnquiry = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this enquiry record?')) return;
+    try {
+      await deleteContactSubmission(id);
+      showToast('Enquiry record deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete enquiry.', 'error');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-warm-50 text-warm-850">
       {/* Sidebar Navigation */}
@@ -374,6 +410,18 @@ export const Dashboard: React.FC = () => {
             >
               <Settings className="h-4.5 w-4.5" />
               <span>General Settings</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('enquiries')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'enquiries' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Inbox className="h-4.5 w-4.5" />
+              <span>Enquiries</span>
             </button>
 
             <button
@@ -457,6 +505,7 @@ export const Dashboard: React.FC = () => {
           <div className="text-left">
             <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-900 capitalize">
               {activeTab === 'settings' && 'General Settings'}
+              {activeTab === 'enquiries' && 'Customer Enquiries'}
               {activeTab === 'home' && 'Home Page Hero Section'}
               {activeTab === 'doctors' && 'Doctor Advisory Panel'}
               {activeTab === 'youtube' && 'Patient YouTube Stories'}
@@ -464,6 +513,7 @@ export const Dashboard: React.FC = () => {
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
+              {activeTab === 'enquiries' && 'View consultation requests, update status, and manage client follow-up remarks.'}
               {activeTab === 'home' && 'Update the primary text banner and main background visuals for visitors.'}
               {activeTab === 'doctors' && 'Create, modify, or delete profiles of medical advisors and clinicians.'}
               {activeTab === 'youtube' && 'Manage patients video stories and YouTube video IDs on the homepage.'}
@@ -485,6 +535,265 @@ export const Dashboard: React.FC = () => {
 
         {/* Tab contents window */}
         <div className="grow p-6 md:p-8 overflow-y-auto">
+          {/* TAB 0: ENQUIRIES */}
+          {activeTab === 'enquiries' && (
+            <div className="space-y-6 font-serif">
+              {/* Filter and stats header */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs">
+                <div className="flex flex-wrap gap-1.5">
+                  {(['All', 'Pending', 'In Progress', 'Completed', 'Cancelled'] as const).map((status) => {
+                    const count = status === 'All' 
+                      ? enquiries.length 
+                      : enquiries.filter((e) => e.status === status).length;
+                    
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setEnquiryFilter(status)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer font-sans ${
+                          enquiryFilter === status
+                            ? 'bg-primary-600 text-white shadow-xs'
+                            : 'bg-warm-50 text-warm-600 hover:bg-warm-100 hover:text-warm-900'
+                        }`}
+                      >
+                        {status} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Edit remarks/status form modal if selected */}
+              {enquiryForm && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-warm-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 text-left animate-fadeIn">
+                    <div className="flex justify-between items-center border-b border-warm-100 pb-3">
+                      <h3 className="font-serif text-base font-bold text-warm-950">
+                        Take Action & Remarks
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setEnquiryForm(null)}
+                        className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4 text-xs sm:text-sm text-warm-800 font-sans">
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Client Name</p>
+                        <p className="font-semibold text-warm-950 mt-0.5 font-serif">{enquiryForm.name}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Phone</p>
+                          <a href={`tel:${enquiryForm.phone}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                            {enquiryForm.phone}
+                          </a>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Email</p>
+                          {enquiryForm.email ? (
+                            <a href={`mailto:${enquiryForm.email}`} className="font-semibold text-primary-600 hover:underline mt-0.5 block">
+                              {enquiryForm.email}
+                            </a>
+                          ) : (
+                            <p className="text-warm-400 italic mt-0.5">Not provided</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Location</p>
+                          <p className="font-medium text-warm-900 mt-0.5">{enquiryForm.location || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Service Interested</p>
+                          <p className="font-medium text-warm-900 mt-0.5 font-serif">
+                            {enquiryForm.services?.title || 'General Enquiry'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-bold text-warm-400 uppercase tracking-wider font-sans">Message</p>
+                        <div className="bg-warm-50 border border-warm-150 p-3 rounded-xl text-warm-700 leading-relaxed max-h-36 overflow-y-auto mt-0.5 font-medium whitespace-pre-wrap">
+                          {enquiryForm.message || <span className="italic text-warm-400">No message provided.</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleSaveEnquiry} className="space-y-4 pt-2 border-t border-warm-100 text-left font-sans">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Processing Status
+                        </label>
+                        <select
+                          value={enquiryForm.status}
+                          onChange={(e) => setEnquiryForm({ ...enquiryForm, status: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block font-sans">
+                          Remarks / Follow-up Notes
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={enquiryForm.remarks || ''}
+                          placeholder="Add comments on customer conversation, appointment timings, caretakers assigned, etc..."
+                          onChange={(e) => setEnquiryForm({ ...enquiryForm, remarks: e.target.value })}
+                          className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2 text-xs font-bold font-sans">
+                        <button
+                          type="button"
+                          onClick={() => setEnquiryForm(null)}
+                          className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span>Save Changes</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-sans">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Received Date</th>
+                          <th className="px-6 py-4">Client Details</th>
+                          <th className="px-6 py-4">Location</th>
+                          <th className="px-6 py-4">Service</th>
+                          <th className="px-6 py-4">Message</th>
+                          <th className="px-6 py-4">Status</th>
+                          <th className="px-6 py-4">Remarks</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {(() => {
+                          const filtered = enquiryFilter === 'All' 
+                            ? enquiries 
+                            : enquiries.filter((e) => e.status === enquiryFilter);
+
+                          if (filtered.length === 0) {
+                            return (
+                              <tr>
+                                <td colSpan={8} className="px-6 py-10 text-center text-warm-400 font-medium">
+                                  No enquiries found for this filter.
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return filtered.map((item) => {
+                            const dateStr = new Date(item.created_at).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+
+                            return (
+                              <tr key={item.id} className="hover:bg-warm-50/50 align-top">
+                                <td className="px-6 py-4 font-medium text-warm-500 whitespace-nowrap">{dateStr}</td>
+                                <td className="px-6 py-4">
+                                  <div className="space-y-0.5">
+                                    <p className="font-bold text-warm-900 font-serif text-sm">{item.name}</p>
+                                    <p className="font-semibold text-warm-650">
+                                      <a href={`tel:${item.phone}`} className="hover:text-primary-600 transition-colors">
+                                        {item.phone}
+                                      </a>
+                                    </p>
+                                    {item.email && (
+                                      <p className="text-warm-500">
+                                        <a href={`mailto:${item.email}`} className="hover:text-primary-600 transition-colors">
+                                          {item.email}
+                                        </a>
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-warm-750 font-bold">{item.location || 'N/A'}</td>
+                                <td className="px-6 py-4 font-semibold text-primary-700 font-serif">
+                                  {item.services?.title || <span className="text-warm-400 font-medium italic font-sans">General</span>}
+                                </td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs">
+                                  <p className="line-clamp-3 whitespace-pre-wrap">{item.message || '-'}</p>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    item.status === 'Pending' 
+                                      ? 'bg-amber-50 text-amber-800 border-amber-200' 
+                                      : item.status === 'In Progress' 
+                                      ? 'bg-blue-50 text-blue-800 border-blue-200' 
+                                      : item.status === 'Completed' 
+                                      ? 'bg-green-50 text-green-800 border-green-200' 
+                                      : 'bg-warm-100 text-warm-600 border-warm-250'
+                                  }`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-xs">
+                                  <p className="line-clamp-3 whitespace-pre-wrap font-sans">{item.remarks || <span className="text-warm-450 italic font-normal">None</span>}</p>
+                                </td>
+                                <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                  <button
+                                    onClick={() => setEnquiryForm(item)}
+                                    title="Take Action"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteEnquiry(item.id)}
+                                    title="Delete enquiry"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TAB 1: SITE SETTINGS */}
           {activeTab === 'settings' && (
             <form onSubmit={handleSaveSettings} className="max-w-2xl bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-xs text-left space-y-6">

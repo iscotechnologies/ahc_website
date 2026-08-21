@@ -59,3 +59,63 @@ export async function submitReferral(input: ReferralSubmissionInput): Promise<vo
     throw error;
   }
 }
+
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  location: string | null;
+  service_interested: string | null;
+  message: string | null;
+  status: string;
+  remarks: string | null;
+  created_at: string;
+  services?: {
+    id: string;
+    title: string;
+  } | null;
+}
+
+export async function getContactSubmissions(): Promise<ContactSubmission[]> {
+  const { data, error } = await supabase
+    .from('contact_submissions')
+    .select(`
+      *,
+      services:service_interested (
+        id,
+        title
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching contact submissions:', error);
+    throw error;
+  }
+  return (data as any) || [];
+}
+
+export async function updateContactSubmission(id: string, updates: Partial<ContactSubmission>): Promise<void> {
+  const { error } = await supabase
+    .from('contact_submissions')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating contact submission:', error);
+    throw error;
+  }
+}
+
+export async function deleteContactSubmission(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('contact_submissions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting contact submission:', error);
+    throw error;
+  }
+}
