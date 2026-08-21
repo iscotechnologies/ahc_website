@@ -315,5 +315,12 @@ values
   )
 on conflict (id) do nothing;
 
+-- 11. Mock Google Reviews
+insert into google_reviews (name, time_text, rating, text, location, display_order)
+values
+  ('Ramesh Sundaram', '2 weeks ago', 5, 'Extremely professional caretaker service in Chennai. They took great care of my father post-hip replacement surgery. Highly recommended.', 'Chennai', 1),
+  ('Kavitha Raja', '1 month ago', 5, 'We hired a home nurse for wound dressing in Madurai. Excellent hygiene standards, arrived on time, and was very friendly with my mother.', 'Madurai', 2),
+  ('Dr. Vignesh Kumar', '3 months ago', 5, 'Highly reliable team. The physiotherapist they scheduled in Trichy was very patient and explained the recovery exercises very clearly.', 'Trichy', 3);
+
 
 

@@ -281,4 +281,23 @@ on storage.objects for all to authenticated
 using ( bucket_id = 'resumes' )
 with check ( bucket_id = 'resumes' );
 
+-- 12. Google Reviews Table
+create table google_reviews (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  time_text text not null default '1 week ago',
+  rating int not null default 5,
+  text text not null,
+  location text not null,
+  display_order int default 0,
+  created_at timestamptz default now()
+);
+
+alter table google_reviews enable row level security;
+
+create policy "Enable select for all users" on google_reviews
+  for select using (true);
+create policy "Enable all for authenticated users" on google_reviews
+  for all to authenticated using (true) with check (true);
+
 

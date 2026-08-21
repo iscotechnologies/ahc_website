@@ -1,31 +1,63 @@
-import React from 'react';
-import { Star, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Star, ShieldCheck, Loader2 } from 'lucide-react';
 import { AnimatedSection } from '../shared/AnimatedSection';
+import { getGoogleReviews, GoogleReview } from '../../lib/queries/reviews';
+
+const fallbackReviews: GoogleReview[] = [
+  {
+    id: '1',
+    name: 'Ramesh Sundaram',
+    time_text: '2 weeks ago',
+    rating: 5,
+    text: 'Extremely professional caretaker service in Chennai. They took great care of my father post-hip replacement surgery. Highly recommended.',
+    location: 'Chennai',
+    display_order: 1,
+    created_at: '',
+  },
+  {
+    id: '2',
+    name: 'Kavitha Raja',
+    time_text: '1 month ago',
+    rating: 5,
+    text: 'We hired a home nurse for wound dressing in Madurai. Excellent hygiene standards, arrived on time, and was very friendly with my mother.',
+    location: 'Madurai',
+    display_order: 2,
+    created_at: '',
+  },
+  {
+    id: '3',
+    name: 'Dr. Vignesh Kumar',
+    time_text: '3 months ago',
+    rating: 5,
+    text: 'Highly reliable team. The physiotherapist they scheduled in Trichy was very patient and explained the recovery exercises very clearly.',
+    location: 'Trichy',
+    display_order: 3,
+    created_at: '',
+  },
+];
 
 export const GoogleReviews: React.FC = () => {
-  const reviews = [
-    {
-      name: 'Ramesh Sundaram',
-      time: '2 weeks ago',
-      rating: 5,
-      text: 'Extremely professional caretaker service in Chennai. They took great care of my father post-hip replacement surgery. Highly recommended.',
-      location: 'Chennai',
-    },
-    {
-      name: 'Kavitha Raja',
-      time: '1 month ago',
-      rating: 5,
-      text: 'We hired a home nurse for wound dressing in Madurai. Excellent hygiene standards, arrived on time, and was very friendly with my mother.',
-      location: 'Madurai',
-    },
-    {
-      name: 'Dr. Vignesh Kumar',
-      time: '3 months ago',
-      rating: 5,
-      text: 'Highly reliable team. The physiotherapist they scheduled in Trichy was very patient and explained the recovery exercises very clearly.',
-      location: 'Trichy',
-    },
-  ];
+  const [reviews, setReviews] = useState<GoogleReview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        const data = await getGoogleReviews();
+        if (data && data.length > 0) {
+          setReviews(data);
+        } else {
+          setReviews(fallbackReviews);
+        }
+      } catch (err) {
+        console.error('Failed to load Google reviews, using local fallback', err);
+        setReviews(fallbackReviews);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadReviews();
+  }, []);
 
   return (
     <section className="py-16 bg-white/40 border-t border-sky-100/40 backdrop-blur-xs">
@@ -60,36 +92,44 @@ export const GoogleReviews: React.FC = () => {
           </AnimatedSection>
 
           {/* Right Column: Individual reviews grid (8 cols) */}
-          <div className="lg:col-span-8 grid gap-6 sm:grid-cols-3">
-            {reviews.map((review, index) => (
-              <AnimatedSection
-                key={index}
-                direction="up"
-                delay={index * 0.1}
-                className="rounded-2xl border border-warm-200 bg-white p-5 shadow-xs flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex text-amber-500">
-                      {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-current" />
-                      ))}
+          <div className="lg:col-span-8">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-3">
+                {reviews.slice(0, 3).map((review, index) => (
+                  <AnimatedSection
+                    key={review.id || index}
+                    direction="up"
+                    delay={index * 0.1}
+                    className="rounded-2xl border border-warm-200 bg-white p-5 shadow-xs flex flex-col justify-between"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex text-amber-500">
+                          {Array.from({ length: review.rating }).map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-current" />
+                          ))}
+                        </div>
+                        <span className="text-[10px] text-warm-400 font-medium">{review.time_text}</span>
+                      </div>
+                      <p className="text-xs text-warm-600 leading-relaxed italic">
+                        "{review.text}"
+                      </p>
                     </div>
-                    <span className="text-[10px] text-warm-400 font-medium">{review.time}</span>
-                  </div>
-                  <p className="text-xs text-warm-600 leading-relaxed italic">
-                    "{review.text}"
-                  </p>
-                </div>
 
-                <div className="border-t border-warm-100 mt-4 pt-3 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-warm-800">{review.name}</span>
-                  <span className="rounded bg-warm-100 px-1.5 py-0.5 text-[9px] font-bold text-warm-600 uppercase tracking-wide">
-                    {review.location}
-                  </span>
-                </div>
-              </AnimatedSection>
-            ))}
+                    <div className="border-t border-warm-100 mt-4 pt-3 flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-warm-800">{review.name}</span>
+                      <span className="rounded bg-warm-100 px-1.5 py-0.5 text-[9px] font-bold text-warm-600 uppercase tracking-wide">
+                        {review.location}
+                      </span>
+                    </div>
+                  </AnimatedSection>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

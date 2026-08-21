@@ -2,7 +2,6 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Hero } from '../components/home/Hero';
 import { DoctorIntro } from '../components/home/DoctorIntro';
-import { VisionMission } from '../components/home/VisionMission';
 import { ServicesGrid } from '../components/home/ServicesGrid';
 import { CounsellingSpotlight } from '../components/home/CounsellingSpotlight';
 import { CareTakerSpotlight } from '../components/home/CareTakerSpotlight';
@@ -27,11 +26,12 @@ export const Home: React.FC = () => {
         {/* Sections in order */}
         <Hero />
         <DoctorIntro />
-        <VisionMission />
         <ServicesGrid />
         <CounsellingSpotlight />
-        <CareTakerSpotlight />
-        <TeamPreview />
+        <div className="bg-linear-to-b from-[#2774ae] via-[#002e5d] to-[#002e5d] py-8 border-y border-white/10">
+          <CareTakerSpotlight />
+          <TeamPreview />
+        </div>
         <TestimonialsGallery />
         <GoogleReviews />
         <PartnersMarquee />

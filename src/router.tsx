@@ -13,6 +13,7 @@ import { Membership } from './pages/Membership';
 import { ReferralPartner } from './pages/ReferralPartner';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsConditions } from './pages/TermsConditions';
+import { About } from './pages/About';
 
 // Admin Page Imports
 import { Login } from './pages/admin/Login';
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
       { path: 'contact/referral-partner', element: <ReferralPartner /> },
       { path: 'privacy-policy', element: <PrivacyPolicy /> },
       { path: 'terms-conditions', element: <TermsConditions /> },
+      { path: 'about', element: <About /> },
     ],
   },
   // Admin Authentication Routes (Excluded from maintenance interception)

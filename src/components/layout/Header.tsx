@@ -38,29 +38,15 @@ export const Header: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-warm-200 bg-white/95 backdrop-blur-md transition-shadow duration-300 hover:shadow-md">
-        {/* Top Info Bar */}
-        <div className="bg-primary-900 px-4 py-2 text-xs font-medium text-primary-50 sm:px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-primary-400">♥</span>
-            <span>Serving Chennai, Trichy & Madurai</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="tel:+919943161027" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Phone className="h-3 w-3" />
-              <span>Call: +91 99431 61027</span>
-            </a>
-          </div>
-        </div>
-
         {/* Navigation Bar */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-20 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center group">
               <img
                 src="/assets/logo.jpeg"
                 alt="Ayusya Health Care"
-                className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-14 w-auto object-contain transition-transform group-hover:scale-105 rounded-full"
               />
             </Link>
 
@@ -68,25 +54,34 @@ export const Header: React.FC = () => {
             <nav className="hidden lg:flex items-center gap-6" aria-label="Main Navigation">
               <Link
                 to="/"
-                className={`text-sm font-semibold transition-colors hover:text-primary-600 ${
+                className={`text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 ${
                   location.pathname === '/' ? 'text-primary-600' : 'text-warm-700'
                 }`}
               >
-                Home
+                HOME
+              </Link>
+
+              <Link
+                to="/about"
+                className={`text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 ${
+                  location.pathname === '/about' ? 'text-primary-600' : 'text-warm-700'
+                }`}
+              >
+                ABOUT US
               </Link>
 
               {/* Service Offered Dropdown */}
               <div className="relative group">
                 <button
                   onClick={() => toggleDropdown('services')}
-                  className={`flex items-center gap-1 text-sm font-semibold transition-colors hover:text-primary-600 outline-none ${
+                  className={`flex items-center gap-1 text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 outline-none ${
                     location.pathname.startsWith('/services') ? 'text-primary-600' : 'text-warm-700'
                   }`}
                   aria-expanded={activeDropdown === 'services'}
                   aria-haspopup="true"
                 >
-                  Service Offered
-                  <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                  SERVICES
+                  <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
                 </button>
                 <div
                   className={`absolute left-0 top-full pt-2 w-64 origin-top-left transition-all duration-200 z-100 ${
@@ -100,7 +95,7 @@ export const Header: React.FC = () => {
                       <Link
                         key={link.path}
                         to={link.path}
-                        className={`block rounded-xl px-4 py-2 text-sm transition-colors hover:bg-primary-50 hover:text-primary-700 ${
+                        className={`block rounded-xl px-4 py-2 text-xs transition-colors hover:bg-primary-50 hover:text-primary-700 ${
                           location.pathname === link.path ? 'bg-primary-50 font-medium text-primary-700' : 'text-warm-700'
                         }`}
                       >
@@ -115,14 +110,14 @@ export const Header: React.FC = () => {
               <div className="relative group">
                 <button
                   onClick={() => toggleDropdown('team')}
-                  className={`flex items-center gap-1 text-sm font-semibold transition-colors hover:text-primary-600 outline-none ${
+                  className={`flex items-center gap-1 text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 outline-none ${
                     location.pathname.startsWith('/team') ? 'text-primary-600' : 'text-warm-700'
                   }`}
                   aria-expanded={activeDropdown === 'team'}
                   aria-haspopup="true"
                 >
-                  Our Team
-                  <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                  OUR TEAM
+                  <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
                 </button>
                 <div
                   className={`absolute left-0 top-full pt-2 w-56 origin-top-left transition-all duration-200 z-100 ${
@@ -134,7 +129,7 @@ export const Header: React.FC = () => {
                   <div className="rounded-2xl border border-warm-100 bg-white p-2 shadow-xl">
                     <Link
                       to="/team/clinical-associates"
-                      className={`block rounded-xl px-4 py-2 text-sm transition-colors hover:bg-primary-50 hover:text-primary-700 ${
+                      className={`block rounded-xl px-4 py-2 text-xs transition-colors hover:bg-primary-50 hover:text-primary-700 ${
                         location.pathname === '/team/clinical-associates' ? 'bg-primary-50 font-medium text-primary-700' : 'text-warm-700'
                       }`}
                     >
@@ -146,25 +141,25 @@ export const Header: React.FC = () => {
 
               <Link
                 to="/career"
-                className={`text-sm font-semibold transition-colors hover:text-primary-600 ${
+                className={`text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 ${
                   location.pathname === '/career' ? 'text-primary-600' : 'text-warm-700'
                 }`}
               >
-                Career
+                CAREERS
               </Link>
 
               {/* Contact Us Dropdown */}
               <div className="relative group">
                 <button
                   onClick={() => toggleDropdown('contact')}
-                  className={`flex items-center gap-1 text-sm font-semibold transition-colors hover:text-primary-600 outline-none ${
+                  className={`flex items-center gap-1 text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 outline-none ${
                     location.pathname.startsWith('/contact') ? 'text-primary-600' : 'text-warm-700'
                   }`}
                   aria-expanded={activeDropdown === 'contact'}
                   aria-haspopup="true"
                 >
-                  Contact Us
-                  <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                  CONTACT US
+                  <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
                 </button>
                 <div
                   className={`absolute right-0 top-full pt-2 w-56 origin-top-right transition-all duration-200 z-100 ${
@@ -178,7 +173,7 @@ export const Header: React.FC = () => {
                       <Link
                         key={link.path}
                         to={link.path}
-                        className={`block rounded-xl px-4 py-2 text-sm transition-colors hover:bg-primary-50 hover:text-primary-700 ${
+                        className={`block rounded-xl px-4 py-2 text-xs transition-colors hover:bg-primary-50 hover:text-primary-700 ${
                           location.pathname === link.path ? 'bg-primary-50 font-medium text-primary-700' : 'text-warm-700'
                         }`}
                       >
@@ -190,14 +185,15 @@ export const Header: React.FC = () => {
               </div>
             </nav>
 
-            {/* CTAs */}
+            {/* Phone CTA aligned on the right */}
             <div className="hidden lg:flex items-center gap-4">
-              <button
-                onClick={() => setIsBookModalOpen(true)}
-                className="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-700 hover:shadow-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              <a
+                href="tel:+919943161027"
+                className="flex items-center gap-2 text-sm font-bold text-warm-900 hover:text-primary-600 transition-colors"
               >
-                Book Now
-              </button>
+                <Phone className="h-4 w-4 text-primary-600" />
+                <span>9943161027</span>
+              </a>
             </div>
 
             {/* Hamburger Button for Mobile */}
@@ -224,23 +220,32 @@ export const Header: React.FC = () => {
           <div className="lg:hidden border-t border-warm-100 bg-white px-4 py-4 space-y-3 max-h-[calc(100vh-4rem)] overflow-y-auto shadow-inner">
             <Link
               to="/"
-              className={`block rounded-xl px-4 py-2 text-sm font-semibold hover:bg-warm-50 ${
+              className={`block rounded-xl px-4 py-2 text-xs font-bold uppercase hover:bg-warm-50 ${
                 location.pathname === '/' ? 'bg-primary-50 text-primary-700' : 'text-warm-700'
               }`}
             >
-              Home
+              HOME
+            </Link>
+
+            <Link
+              to="/about"
+              className={`block rounded-xl px-4 py-2 text-xs font-bold uppercase hover:bg-warm-50 ${
+                location.pathname === '/about' ? 'bg-primary-50 text-primary-700' : 'text-warm-700'
+              }`}
+            >
+              ABOUT US
             </Link>
 
             {/* Mobile Service Offered List */}
             <div className="space-y-1">
               <span className="block px-4 text-[10px] font-bold tracking-widest text-warm-400 uppercase">
-                Services Offered
+                SERVICES
               </span>
               {servicesLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`block rounded-xl px-6 py-2 text-sm font-medium hover:bg-warm-50 ${
+                  className={`block rounded-xl px-6 py-2 text-xs font-medium hover:bg-warm-50 ${
                     location.pathname === link.path ? 'bg-primary-50 text-primary-700' : 'text-warm-600'
                   }`}
                 >
@@ -252,11 +257,11 @@ export const Header: React.FC = () => {
             {/* Mobile Our Team List */}
             <div className="space-y-1">
               <span className="block px-4 text-[10px] font-bold tracking-widest text-warm-400 uppercase">
-                Our Team
+                OUR TEAM
               </span>
               <Link
                 to="/team/clinical-associates"
-                className={`block rounded-xl px-6 py-2 text-sm font-medium hover:bg-warm-50 ${
+                className={`block rounded-xl px-6 py-2 text-xs font-medium hover:bg-warm-50 ${
                   location.pathname === '/team/clinical-associates' ? 'bg-primary-50 text-primary-700' : 'text-warm-600'
                 }`}
               >
@@ -266,23 +271,23 @@ export const Header: React.FC = () => {
 
             <Link
               to="/career"
-              className={`block rounded-xl px-4 py-2 text-sm font-semibold hover:bg-warm-50 ${
+              className={`block rounded-xl px-4 py-2 text-xs font-bold uppercase hover:bg-warm-50 ${
                 location.pathname === '/career' ? 'bg-primary-50 text-primary-700' : 'text-warm-700'
               }`}
             >
-              Career
+              CAREERS
             </Link>
 
             {/* Mobile Contact Us List */}
             <div className="space-y-1">
               <span className="block px-4 text-[10px] font-bold tracking-widest text-warm-400 uppercase">
-                Contact Us
+                CONTACT US
               </span>
               {contactLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`block rounded-xl px-6 py-2 text-sm font-medium hover:bg-warm-50 ${
+                  className={`block rounded-xl px-6 py-2 text-xs font-medium hover:bg-warm-50 ${
                     location.pathname === link.path ? 'bg-primary-50 text-primary-700' : 'text-warm-600'
                   }`}
                 >

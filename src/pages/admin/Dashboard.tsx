@@ -5,6 +5,7 @@ import { updateSettings, SiteSettings } from '../../lib/queries/settings';
 import { supabase } from '../../lib/supabaseClient';
 import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, TeamMember } from '../../lib/queries/team';
 import { getTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, Testimonial } from '../../lib/queries/testimonials';
+import { getGoogleReviews, addGoogleReview, updateGoogleReview, deleteGoogleReview, GoogleReview } from '../../lib/queries/reviews';
 import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } from '../../lib/queries/hospitals';
 import { uploadPhoto } from '../../lib/queries/storage';
 import { 
@@ -48,7 +49,8 @@ import {
   Inbox,
   Briefcase,
   FileText,
-  Shield
+  Shield,
+  Star
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -135,7 +137,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'home' | 'doctors' | 'youtube' | 'hospitals'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -144,12 +146,6 @@ export const Dashboard: React.FC = () => {
   const [showMarquee, setShowMarquee] = useState(false);
   const [marqueeNotification, setMarqueeNotification] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
-
-  // Home states
-  const [heroTitle, setHeroTitle] = useState('');
-  const [heroDescription, setHeroDescription] = useState('');
-  const [heroImageUrl, setHeroImageUrl] = useState('');
-  const [savingHome, setSavingHome] = useState(false);
 
   // Database lists
   const [doctors, setDoctors] = useState<TeamMember[]>([]);
@@ -163,6 +159,8 @@ export const Dashboard: React.FC = () => {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [appFilter, setAppFilter] = useState<'All' | 'New' | 'Reviewed' | 'Interviewed' | 'Hired' | 'Rejected'>('All');
   const [loadingData, setLoadingData] = useState(false);
+  const [reviewsList, setReviewsList] = useState<GoogleReview[]>([]);
+  const [reviewForm, setReviewForm] = useState<Partial<GoogleReview> | null>(null);
 
   // Modals / Edit states
   const [doctorForm, setDoctorForm] = useState<Partial<TeamMember> | null>(null);
@@ -179,9 +177,6 @@ export const Dashboard: React.FC = () => {
       setUnderMaintenance(siteSettings.under_maintenance);
       setShowMarquee(siteSettings.show_marquee);
       setMarqueeNotification(siteSettings.marquee_notification || '');
-      setHeroTitle(siteSettings.hero_title || '');
-      setHeroDescription(siteSettings.hero_description || '');
-      setHeroImageUrl(siteSettings.hero_image_url || '');
     }
   }, [siteSettings]);
 
@@ -214,6 +209,9 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'applications') {
         const data = await getJobApplications();
         setApplications(data);
+      } else if (activeTab === 'reviews') {
+        const data = await getGoogleReviews();
+        setReviewsList(data);
       }
     } catch (err) {
       console.error(err);
@@ -252,24 +250,7 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // 2. Save Home Page Config
-  const handleSaveHome = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingHome(true);
-    try {
-      await updateSettings({
-        hero_title: heroTitle,
-        hero_description: heroDescription,
-        hero_image_url: heroImageUrl,
-      });
-      await refreshSettings();
-      showToast('Home page hero settings updated successfully!', 'success');
-    } catch (err) {
-      showToast('Failed to update home page settings.', 'error');
-    } finally {
-      setSavingHome(false);
-    }
-  };
+
 
   // 3. Doctors CRUD
   const handleSaveDoctor = async (e: React.FormEvent) => {
@@ -352,6 +333,46 @@ export const Dashboard: React.FC = () => {
       loadTabDynamicData();
     } catch (err) {
       showToast('Failed to delete testimonial.', 'error');
+    }
+  };
+
+  // Google Reviews CRUD
+  const handleSaveReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewForm || !reviewForm.name || !reviewForm.text) return;
+
+    try {
+      const payload = {
+        name: reviewForm.name,
+        time_text: reviewForm.time_text || '1 week ago',
+        rating: Number(reviewForm.rating ?? 5),
+        text: reviewForm.text,
+        location: reviewForm.location || 'Chennai',
+        display_order: Number(reviewForm.display_order ?? 0),
+      };
+
+      if (reviewForm.id) {
+        await updateGoogleReview(reviewForm.id, payload);
+        showToast('Google review updated successfully!', 'success');
+      } else {
+        await addGoogleReview(payload);
+        showToast('New Google review added successfully!', 'success');
+      }
+      setReviewForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to save Google review.', 'error');
+    }
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this Google review?')) return;
+    try {
+      await deleteGoogleReview(id);
+      showToast('Google review deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete Google review.', 'error');
     }
   };
 
@@ -595,17 +616,7 @@ export const Dashboard: React.FC = () => {
               <span>Job Applications</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('home')}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
-                activeTab === 'home' 
-                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
-                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
-              }`}
-            >
-              <Home className="h-4.5 w-4.5" />
-              <span>Home Page Hero</span>
-            </button>
+
 
             <button
               onClick={() => setActiveTab('doctors')}
@@ -641,6 +652,18 @@ export const Dashboard: React.FC = () => {
             >
               <Building2 className="h-4.5 w-4.5" />
               <span>Tie-up Hospitals</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'reviews' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Star className="h-4.5 w-4.5" />
+              <span>Google Reviews</span>
             </button>
           </nav>
         </div>
@@ -680,10 +703,10 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'memberships' && 'Membership Enrollments'}
               {activeTab === 'jobs' && 'Manage Job Postings'}
               {activeTab === 'applications' && 'Candidate Job Applications'}
-              {activeTab === 'home' && 'Home Page Hero Section'}
               {activeTab === 'doctors' && 'Doctor Advisory Panel'}
               {activeTab === 'youtube' && 'Patient YouTube Stories'}
               {activeTab === 'hospitals' && 'Partner Tie-up Hospitals'}
+              {activeTab === 'reviews' && 'Google Reviews Manager'}
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
@@ -691,10 +714,10 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'memberships' && 'View and manage annual membership application requests, status, and remarks.'}
               {activeTab === 'jobs' && 'Create, modify, toggle active status, or delete job vacancy postings.'}
               {activeTab === 'applications' && 'View candidate details, read cover notes, download resume documents, and add recruitment notes.'}
-              {activeTab === 'home' && 'Update the primary text banner and main background visuals for visitors.'}
               {activeTab === 'doctors' && 'Create, modify, or delete profiles of medical advisors and clinicians.'}
               {activeTab === 'youtube' && 'Manage patients video stories and YouTube video IDs on the homepage.'}
               {activeTab === 'hospitals' && 'Manage tie-up hospitals list displayed under our Clinical Associates page.'}
+              {activeTab === 'reviews' && 'Create, modify, toggle order, or delete text-based verified Google reviews.'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -1825,71 +1848,7 @@ export const Dashboard: React.FC = () => {
             </form>
           )}
 
-          {/* TAB 2: HOME PAGE HERO */}
-          {activeTab === 'home' && (
-            <form onSubmit={handleSaveHome} className="max-w-2xl bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-xs text-left space-y-6">
-              <h3 className="font-serif text-lg font-bold text-warm-950 border-b border-warm-100 pb-3">Hero Section Banner</h3>
 
-              <div className="space-y-2">
-                <label htmlFor="hero-title" className="text-xs font-bold text-warm-700 uppercase tracking-wider">
-                  Hero Title / Headline Text
-                </label>
-                <input
-                  id="hero-title"
-                  type="text"
-                  required
-                  placeholder="Best Home Health Care in Chennai..."
-                  value={heroTitle}
-                  onChange={(e) => setHeroTitle(e.target.value)}
-                  className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-3 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="hero-desc" className="text-xs font-bold text-warm-700 uppercase tracking-wider">
-                  Hero Description / Sub-headline
-                </label>
-                <textarea
-                  id="hero-desc"
-                  rows={4}
-                  required
-                  placeholder="Professional, compassionate medical and caretaker services in the comfort of your home..."
-                  value={heroDescription}
-                  onChange={(e) => setHeroDescription(e.target.value)}
-                  className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-3 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <FileUploadInput
-                id="hero-img"
-                label="Hero Background Image URL / Upload"
-                value={heroImageUrl}
-                onChange={setHeroImageUrl}
-                folder="hero"
-              />
-
-
-              {/* Preview Box */}
-              <div className="rounded-2xl border border-warm-200 bg-warm-100 overflow-hidden relative h-40">
-                <img src={heroImageUrl || 'https://images.unsplash.com/photo-1516549655169-df83a0774514'} alt="Preview" className="h-full w-full object-cover opacity-45" />
-                <div className="absolute inset-0 bg-linear-to-r from-warm-900 to-transparent p-4 flex flex-col justify-end text-white text-left">
-                  <h4 className="text-sm font-bold font-serif line-clamp-1">{heroTitle || 'Your Headline Here'}</h4>
-                  <p className="text-[10px] text-warm-200 line-clamp-2 mt-1">{heroDescription || 'Your description here...'}</p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-warm-100 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={savingHome}
-                  className="inline-flex items-center gap-2 rounded-xl bg-warm-900 hover:bg-warm-850 px-5 py-3 text-sm font-semibold text-white shadow-md transition-all active:scale-98 cursor-pointer disabled:opacity-50"
-                >
-                  {savingHome ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  <span>Save Home Details</span>
-                </button>
-              </div>
-            </form>
-          )}
 
           {/* TAB 3: DOCTOR DETAILS */}
           {activeTab === 'doctors' && (
@@ -2469,6 +2428,202 @@ export const Dashboard: React.FC = () => {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteHospital(hosp.id)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: GOOGLE REVIEWS */}
+          {activeTab === 'reviews' && (
+            <div className="space-y-6 animate-fadeIn font-sans">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Verified Google reviews ({reviewsList.length} items)
+                </p>
+                <button
+                  onClick={() => setReviewForm({ name: '', time_text: '1 week ago', rating: 5, text: '', location: 'Chennai', display_order: reviewsList.length + 1 })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Review</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {reviewForm && (
+                <form onSubmit={handleSaveReview} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md text-left space-y-6">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3">
+                    <h3 className="font-serif text-base font-bold text-warm-950">
+                      {reviewForm.id ? 'Edit Google Review' : 'Add New Google Review'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setReviewForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2 font-sans">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Author Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ramesh Sundaram"
+                        value={reviewForm.name || ''}
+                        onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Time Posted (Text)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="2 weeks ago"
+                        value={reviewForm.time_text || ''}
+                        onChange={(e) => setReviewForm({ ...reviewForm, time_text: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Location / City</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Chennai"
+                        value={reviewForm.location || ''}
+                        onChange={(e) => setReviewForm({ ...reviewForm, location: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Star Rating (1 - 5)</label>
+                      <select
+                        value={reviewForm.rating || 5}
+                        onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold font-sans"
+                      >
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Review Text / Content</label>
+                      <textarea
+                        rows={3}
+                        required
+                        placeholder="Paste the client's detailed Google Business review content here..."
+                        value={reviewForm.text || ''}
+                        onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Display Order</label>
+                      <input
+                        type="number"
+                        value={reviewForm.display_order ?? 0}
+                        onChange={(e) => setReviewForm({ ...reviewForm, display_order: Number(e.target.value) })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-warm-100 flex justify-end gap-2 text-xs font-bold font-sans">
+                    <button
+                      type="button"
+                      onClick={() => setReviewForm(null)}
+                      className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{reviewForm.id ? 'Update Review' : 'Save Review'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto font-sans">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Author</th>
+                          <th className="px-6 py-4">Location</th>
+                          <th className="px-6 py-4">Rating</th>
+                          <th className="px-6 py-4">Time text</th>
+                          <th className="px-6 py-4">Review Content</th>
+                          <th className="px-6 py-4 text-center">Order</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {reviewsList.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No verified Google reviews found in the database. Click "Add New Review" to get started.
+                            </td>
+                          </tr>
+                        ) : (
+                          reviewsList.map((item) => (
+                            <tr key={item.id} className="hover:bg-warm-50/50 align-top">
+                              <td className="px-6 py-4 font-bold text-warm-900 font-serif text-sm whitespace-nowrap">{item.name}</td>
+                              <td className="px-6 py-4 text-warm-750 font-bold whitespace-nowrap">{item.location}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex text-amber-500">
+                                  {Array.from({ length: item.rating }).map((_, idx) => (
+                                    <Star key={idx} className="h-3.5 w-3.5 fill-current" />
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-warm-500 whitespace-nowrap">{item.time_text}</td>
+                              <td className="px-6 py-4 text-warm-650 max-w-md font-medium">
+                                <p className="line-clamp-3 italic">"{item.text}"</p>
+                              </td>
+                              <td className="px-6 py-4 text-center font-bold text-warm-700">{item.display_order}</td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setReviewForm(item)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteReview(item.id)}
                                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
