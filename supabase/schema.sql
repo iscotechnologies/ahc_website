@@ -210,8 +210,8 @@ create policy "Enable all for authenticated users" on membership_submissions
 -- 8. Referral Submissions: Public Insert-Only
 create policy "Enable insert for anonymous users" on referral_submissions
   for insert to anon with check (true);
-create policy "Enable select for authenticated users" on referral_submissions
-  for select to authenticated using (true);
+create policy "Enable all for authenticated users" on referral_submissions
+  for all to authenticated using (true) with check (true);
 
 -- 9. Job Applications: Public Insert-Only & Authenticated Manage
 create policy "Enable insert for anonymous users" on job_applications
