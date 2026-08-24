@@ -95,7 +95,7 @@ const fallbackDetails: Record<string, FallbackDetail> = {
   'annual-membership': {
     title: 'Annual Membership',
     short: 'Comprehensive annual healthcare plans providing regular checkups and emergency support.',
-    long: 'Our Annual Health Membership is designed to offer peace of mind for families, especially those with elderly parents living in Chennai, Trichy, or Madurai. Members receive regular monthly checkups, priority access to doctor visits, discounts on services and medical equipment, and a dedicated healthcare manager to coordinate medical emergencies and routine treatments.',
+    long: 'Our Annual Health Membership is designed to offer peace of mind for families, especially those with elderly parents living in Chennai or Madurai. Members receive regular monthly checkups, priority access to doctor visits, discounts on services and medical equipment, and a dedicated healthcare manager to coordinate medical emergencies and routine treatments.',
     icon: 'Shield',
     image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80',
     inclusions: [
@@ -195,7 +195,7 @@ export const ServiceDetailPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{`${displayTitle} | Best Home Care in Chennai Trichy Madurai | Ayusya`}</title>
+        <title>{`${displayTitle} | Best Home Care in Chennai & Madurai | Ayusya`}</title>
         <meta name="description" content={displayShort} />
       </Helmet>
 

@@ -58,7 +58,7 @@ values
     'annual-membership',
     'Annual Membership',
     'Comprehensive annual healthcare plans providing regular checkups and emergency support.',
-    'Our Annual Health Membership is designed to offer peace of mind for families, especially those with elderly parents living in Chennai, Trichy, or Madurai. Members receive regular monthly checkups, priority access to doctor visits, discounts on services and medical equipment, and a dedicated healthcare manager to coordinate medical emergencies and routine treatments.',
+    'Our Annual Health Membership is designed to offer peace of mind for families, especially those with elderly parents living in Chennai or Madurai. Members receive regular monthly checkups, priority access to doctor visits, discounts on services and medical equipment, and a dedicated healthcare manager to coordinate medical emergencies and routine treatments.',
     'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80',
     'Shield',
     6
@@ -152,7 +152,7 @@ values
   ),
   (
     'Ramanathan S.',
-    'Trichy',
+    'Chennai',
     'dQw4w9WgXcQ',
     'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
     3
@@ -163,7 +163,7 @@ insert into partners (name, logo_url, website_url, display_order)
 values
   ('Appasamy Hospital', 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=150&q=80', 'https://example.com', 1),
   ('Chennai General Clinic', 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=150&q=80', 'https://example.com', 2),
-  ('Trichy Specialty Hospital', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=150&q=80', 'https://example.com', 3),
+  ('Metro Specialty Hospital', 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=150&q=80', 'https://example.com', 3),
   ('Madurai Care Center', 'https://images.unsplash.com/photo-1504813184591-015578998475?auto=format&fit=crop&w=150&q=80', 'https://example.com', 4);
 
 -- 5. Job Openings
@@ -185,7 +185,7 @@ values
   ),
   (
     'Elderly Caretaker',
-    'Trichy',
+    'Chennai',
     'Full-Time',
     'Seeking patient and warm caretakers with training in geriatric support. Tasks include personal hygiene assistance, mobility assistance, feed assistance, and medication reminders.',
     true
@@ -196,9 +196,9 @@ insert into site_settings (id, under_maintenance, marquee_notification, show_mar
 values (
   1, 
   false, 
-  'Welcome to Ayusya Health Care. We provide professional home services across Chennai, Trichy, and Madurai.', 
+  'Welcome to Ayusya Health Care. We provide professional home services across Chennai and Madurai.', 
   false,
-  'Best Home Health Care in Chennai, Trichy & Madurai',
+  'Best Home Health Care in Chennai & Madurai',
   'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.',
   'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80'
 ) on conflict (id) do nothing;
@@ -265,7 +265,7 @@ values
     'Suresh Raina',
     '9988776655',
     'suresh.raina@yahoo.com',
-    'Trichy',
+    'Chennai',
     'd2b70f08-7261-4de2-bf56-11f81cfef1ea',
     'Looking for a nurse to visit home daily for injection and wound dressing.',
     'In Progress',
@@ -320,7 +320,7 @@ insert into google_reviews (name, time_text, rating, text, location, display_ord
 values
   ('Ramesh Sundaram', '2 weeks ago', 5, 'Extremely professional caretaker service in Chennai. They took great care of my father post-hip replacement surgery. Highly recommended.', 'Chennai', 1),
   ('Kavitha Raja', '1 month ago', 5, 'We hired a home nurse for wound dressing in Madurai. Excellent hygiene standards, arrived on time, and was very friendly with my mother.', 'Madurai', 2),
-  ('Dr. Vignesh Kumar', '3 months ago', 5, 'Highly reliable team. The physiotherapist they scheduled in Trichy was very patient and explained the recovery exercises very clearly.', 'Trichy', 3);
+  ('Dr. Vignesh Kumar', '3 months ago', 5, 'Highly reliable team. The physiotherapist they scheduled in Chennai was very patient and explained the recovery exercises very clearly.', 'Chennai', 3);
 
 
 -- 12. Homepage Recommended Services

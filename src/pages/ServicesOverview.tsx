@@ -111,7 +111,7 @@ export const ServicesOverview: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Our Home Health Care Services | Chennai, Trichy & Madurai | Ayusya</title>
+        <title>Our Home Health Care Services | Chennai & Madurai | Ayusya</title>
         <meta
           name="description"
           content="Explore the full range of home healthcare services offered by Ayusya, including Trained Caretaker, Home Nursing, Doctor Visit, Physiotherapy, and medical machinery."

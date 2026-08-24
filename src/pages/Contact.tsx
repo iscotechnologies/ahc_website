@@ -34,10 +34,10 @@ export const Contact: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us | Home Care Coordination Chennai Trichy Madurai</title>
+        <title>Contact Us | Home Care Coordination Chennai & Madurai</title>
         <meta
           name="description"
-          content="Contact Ayusya Health Care to book caretakers, nurses, and doctor visits. We have coordinates in Chennai, Trichy, and Madurai, Tamil Nadu."
+          content="Contact Ayusya Health Care to book caretakers, nurses, and doctor visits. We have coordinates in Chennai and Madurai, Tamil Nadu."
         />
       </Helmet>
 
@@ -104,7 +104,7 @@ export const Contact: React.FC = () => {
                 </p>
                 <div className="border-t border-warm-100 pt-3 flex items-center justify-between text-[11px] text-warm-500 font-medium">
                   <span>Advisory coordinates in:</span>
-                  <span className="font-bold text-warm-850">Chennai / Trichy / Madurai</span>
+                  <span>Chennai / Madurai</span>
                 </div>
               </AnimatedSection>
             </div>

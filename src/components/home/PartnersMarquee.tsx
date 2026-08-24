@@ -4,7 +4,7 @@ import { getPartners, Partner } from '../../lib/queries/partners';
 const fallbackPartners: Partner[] = [
   { id: '1', name: 'Appasamy Hospital', logo_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=150&q=80', display_order: 1 },
   { id: '2', name: 'Chennai General Clinic', logo_url: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=150&q=80', display_order: 2 },
-  { id: '3', name: 'Trichy Specialty Hospital', logo_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=150&q=80', display_order: 3 },
+  { id: '3', name: 'Metro Specialty Hospital', logo_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=150&q=80', display_order: 3 },
   { id: '4', name: 'Madurai Care Center', logo_url: 'https://images.unsplash.com/photo-1504813184591-015578998475?auto=format&fit=crop&w=150&q=80', display_order: 4 },
 ];
 

@@ -89,7 +89,7 @@ export const Membership: React.FC = () => {
         <title>Annual Health Membership Plans | Ayusya Health Care</title>
         <meta
           name="description"
-          content="Enroll in Ayusya Health Care Annual Membership plans. Regular home nursing, general physician visits, and priority support in Chennai, Trichy, and Madurai."
+          content="Enroll in Ayusya Health Care Annual Membership plans. Regular home nursing, general physician visits, and priority support in Chennai and Madurai."
         />
       </Helmet>
 

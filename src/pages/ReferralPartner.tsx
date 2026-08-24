@@ -67,7 +67,7 @@ export const ReferralPartner: React.FC = () => {
         <title>Referral Partners & Hospital Network Program | Ayusya</title>
         <meta
           name="description"
-          content="Partner with Ayusya Health Care. We collaborate with doctors, diagnostic labs, NGOs, and hospitals in Chennai, Trichy, and Madurai for home clinical transfers."
+          content="Partner with Ayusya Health Care. We collaborate with doctors, diagnostic labs, NGOs, and hospitals in Chennai and Madurai for home clinical transfers."
         />
       </Helmet>
 

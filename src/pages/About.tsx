@@ -107,10 +107,6 @@ export const About: React.FC = () => {
                     <CheckCircle2 className="h-4 w-4 text-primary-600" />
                     Madurai
                   </span>
-                  <span className="flex items-center gap-1.5 bg-white/80 px-4 py-2.5 rounded-2xl shadow-xs border border-warm-100">
-                    <CheckCircle2 className="h-4 w-4 text-primary-600" />
-                    Trichy
-                  </span>
                 </div>
               </div>
               <div className="lg:col-span-5 relative">

@@ -151,7 +151,6 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, compact = f
           >
             <option value="">Select a city</option>
             <option value="Chennai">Chennai</option>
-            <option value="Trichy">Trichy</option>
             <option value="Madurai">Madurai</option>
           </select>
           {errors.location && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.location.message}</p>}

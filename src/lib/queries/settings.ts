@@ -13,9 +13,9 @@ export interface SiteSettings {
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   under_maintenance: false,
-  marquee_notification: 'Welcome to Ayusya Health Care. We provide professional home services across Chennai, Trichy, and Madurai.',
+  marquee_notification: 'Welcome to Ayusya Health Care. We provide professional home services across Chennai and Madurai.',
   show_marquee: false,
-  hero_title: 'Best Home Health Care in Chennai, Trichy & Madurai',
+  hero_title: 'Best Home Health Care in Chennai & Madurai',
   hero_description: 'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.',
   hero_image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80'
 };

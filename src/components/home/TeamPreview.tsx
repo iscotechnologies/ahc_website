@@ -120,12 +120,12 @@ export const TeamPreview: React.FC = () => {
               >
                 <div className="space-y-4">
                   {/* Photo container styled like Hero cards */}
-                  <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-white/10 flex items-center justify-center p-2 border border-white/10">
+                  <div className="relative aspect-square overflow-hidden rounded-full bg-white/10 flex items-center justify-center p-0.5 border border-white/10 max-w-40 mx-auto">
                     {member.photo_url ? (
                       <img
                         src={member.photo_url}
                         alt={member.name}
-                        className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-103"
+                        className="h-full w-full object-cover rounded-full scale-[1.04] transition-transform duration-500 group-hover:scale-[1.09]"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-white/5 text-primary-300">

@@ -1444,7 +1444,6 @@ export const Dashboard: React.FC = () => {
                         className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold"
                       >
                         <option value="Chennai">Chennai</option>
-                        <option value="Trichy">Trichy</option>
                         <option value="Madurai">Madurai</option>
                       </select>
                     </div>

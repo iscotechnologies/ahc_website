@@ -3,10 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { Hero } from '../components/home/Hero';
 import { DoctorIntro } from '../components/home/DoctorIntro';
 import { ServicesGrid } from '../components/home/ServicesGrid';
-import { CareTakerSpotlight } from '../components/home/CareTakerSpotlight';
 import { TeamPreview } from '../components/home/TeamPreview';
-import { TestimonialsGallery } from '../components/home/TestimonialsGallery';
-import { GoogleReviews } from '../components/home/GoogleReviews';
+import { PatientStoriesAndReviews } from '../components/home/PatientStoriesAndReviews';
 import { PartnersMarquee } from '../components/home/PartnersMarquee';
 import { FindUs } from '../components/home/FindUs';
 
@@ -14,10 +12,10 @@ export const Home: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Home Care Services Chennai | Nursing Care at Home Trichy Madurai | Ayusya</title>
+        <title>Home Care Services Chennai | Nursing Care at Home Chennai & Madurai | Ayusya</title>
         <meta
           name="description"
-          content="Ayusya Health Care provides professional home care services, trained caretakers, nursing at home, physiotherapists, and doctor home visits in Chennai, Trichy, and Madurai."
+          content="Ayusya Health Care provides professional home care services, trained caretakers, nursing at home, physiotherapists, and doctor home visits in Chennai and Madurai."
         />
       </Helmet>
 
@@ -27,11 +25,9 @@ export const Home: React.FC = () => {
         <DoctorIntro />
         <ServicesGrid />
         <div className="bg-linear-to-b from-[#2774ae] via-[#002e5d] to-[#002e5d] py-8 border-y border-white/10">
-          <CareTakerSpotlight />
           <TeamPreview />
         </div>
-        <TestimonialsGallery />
-        <GoogleReviews />
+        <PatientStoriesAndReviews />
         <PartnersMarquee />
         <FindUs />
       </div>

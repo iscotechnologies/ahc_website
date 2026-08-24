@@ -26,7 +26,7 @@ const fallbackTestimonials: Testimonial[] = [
   {
     id: '3',
     patient_name: 'Ramanathan S.',
-    location: 'Trichy',
+    location: 'Chennai',
     youtube_id: 'dQw4w9WgXcQ',
     thumbnail_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
     display_order: 3,

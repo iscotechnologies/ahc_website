@@ -92,3 +92,8 @@
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+.mask-gradient {
+  mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
+}

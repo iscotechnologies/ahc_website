@@ -39,7 +39,7 @@ const fallbackJobs: JobOpening[] = [
   {
     id: '3',
     title: 'Elderly Caretaker',
-    location: 'Trichy',
+    location: 'Chennai',
     employment_type: 'Full-Time',
     description: 'Seeking patient and warm caretakers with training in geriatric support. Tasks include personal hygiene assistance, mobility assistance, feed assistance, and medication reminders.',
     is_active: true,
@@ -142,7 +142,7 @@ export const Career: React.FC = () => {
         <title>Careers | Join Ayusya Health Care as Nurse or Caretaker</title>
         <meta
           name="description"
-          content="Explore career opportunities at Ayusya Health Care. We are hiring home caretakers, home nurses, and physiotherapists in Chennai, Trichy, and Madurai."
+          content="Explore career opportunities at Ayusya Health Care. We are hiring home caretakers, home nurses, and physiotherapists in Chennai and Madurai."
         />
       </Helmet>
 

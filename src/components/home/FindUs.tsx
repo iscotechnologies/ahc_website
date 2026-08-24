@@ -11,12 +11,6 @@ export const FindUs: React.FC = () => {
       hours: '24/7 Care Coordination',
     },
     {
-      city: 'Trichy Office',
-      address: '22, Cantonment, Near Head Post Office, Trichy - 620001',
-      phone: '+91 99431 61027',
-      hours: '8:00 AM - 9:00 PM',
-    },
-    {
       city: 'Madurai Office',
       address: '45, K.K. Nagar East, Madurai - 625020',
       phone: '+91 99431 61027',

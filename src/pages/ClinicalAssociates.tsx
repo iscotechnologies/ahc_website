@@ -176,7 +176,7 @@ export const ClinicalAssociates: React.FC = () => {
         <title>Our Clinical Associates & Hospital Partners | Ayusya Health Care</title>
         <meta
           name="description"
-          content="Ayusya Health Care works closely with MedIndia Hospitals, Vasanthi Orthopaedic, Star Bone & Joint, Billroth Hospitals, and leading surgeons in Chennai, Trichy, and Madurai."
+          content="Ayusya Health Care works closely with MedIndia Hospitals, Vasanthi Orthopaedic, Star Bone & Joint, Billroth Hospitals, and leading surgeons in Chennai and Madurai."
         />
       </Helmet>
 
@@ -249,12 +249,12 @@ export const ClinicalAssociates: React.FC = () => {
                     >
                       <div className="space-y-6">
                         <div className="flex gap-4 items-center">
-                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center p-1">
+                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-white/10 border border-white/10 flex items-center justify-center p-0.5">
                             {member.photo_url ? (
                               <img
                                 src={member.photo_url}
                                 alt={member.name}
-                                className="h-full w-full object-contain rounded-xl"
+                                className="h-full w-full object-cover rounded-full scale-[1.04]"
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center bg-white/5 text-white/50">

@@ -46,7 +46,7 @@ export const Footer: React.FC = () => {
               </a>
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary-500 shrink-0 mt-0.5" />
-                <span>Chennai, Trichy & Madurai, Tamil Nadu, India</span>
+                <span>Chennai & Madurai, Tamil Nadu, India</span>
               </div>
             </div>
           </div>
@@ -115,7 +115,6 @@ export const Footer: React.FC = () => {
             </h4>
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="rounded-lg bg-warm-100 px-2.5 py-1 text-[10px] font-semibold text-warm-700">Chennai</span>
-              <span className="rounded-lg bg-warm-100 px-2.5 py-1 text-[10px] font-semibold text-warm-700">Trichy</span>
               <span className="rounded-lg bg-warm-100 px-2.5 py-1 text-[10px] font-semibold text-warm-700">Madurai</span>
             </div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-warm-900 mb-2">
