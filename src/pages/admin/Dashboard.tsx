@@ -18,7 +18,10 @@ import {
   getMembershipSubmissions,
   updateMembershipSubmission,
   deleteMembershipSubmission,
-  MembershipSubmission
+  MembershipSubmission,
+  getReferralSubmissions,
+  deleteReferralSubmission,
+  ReferralSubmission
 } from '../../lib/queries/submissions';
 import { 
   getAllJobOpenings, 
@@ -53,7 +56,8 @@ import {
   FileText,
   Shield,
   Star,
-  Heart
+  Heart,
+  Handshake
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -140,7 +144,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -158,6 +162,7 @@ export const Dashboard: React.FC = () => {
   const [enquiryFilter, setEnquiryFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
   const [membershipSubs, setMembershipSubs] = useState<MembershipSubmission[]>([]);
   const [membershipFilter, setMembershipFilter] = useState<'All' | 'Pending' | 'In Progress' | 'Completed' | 'Cancelled'>('All');
+  const [referrals, setReferrals] = useState<ReferralSubmission[]>([]);
   const [allJobs, setAllJobs] = useState<JobOpening[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [appFilter, setAppFilter] = useState<'All' | 'New' | 'Reviewed' | 'Interviewed' | 'Hired' | 'Rejected'>('All');
@@ -214,6 +219,9 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'memberships') {
         const data = await getMembershipSubmissions();
         setMembershipSubs(data);
+      } else if (activeTab === 'referrals') {
+        const data = await getReferralSubmissions();
+        setReferrals(data);
       } else if (activeTab === 'jobs') {
         const data = await getAllJobOpenings();
         setAllJobs(data);
@@ -569,6 +577,17 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteReferralSub = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this referral partnership request?')) return;
+    try {
+      await deleteReferralSubmission(id);
+      showToast('Referral partnership request deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete referral record.', 'error');
+    }
+  };
+
   const handleSaveJobOpening = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobForm || !jobForm.title) return;
@@ -687,6 +706,18 @@ export const Dashboard: React.FC = () => {
             >
               <Shield className="h-4.5 w-4.5" />
               <span>Membership Enrollments</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('referrals')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'referrals' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Handshake className="h-4.5 w-4.5" />
+              <span>Referral Submissions</span>
             </button>
 
             <button
@@ -822,6 +853,7 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'settings' && 'General Settings'}
               {activeTab === 'enquiries' && 'Customer Enquiries'}
               {activeTab === 'memberships' && 'Membership Enrollments'}
+              {activeTab === 'referrals' && 'Referral Partner Requests'}
               {activeTab === 'jobs' && 'Manage Job Postings'}
               {activeTab === 'applications' && 'Candidate Job Applications'}
               {activeTab === 'doctors' && 'Doctor Advisory Panel'}
@@ -835,6 +867,7 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
               {activeTab === 'enquiries' && 'View consultation requests, update status, and manage client follow-up remarks.'}
               {activeTab === 'memberships' && 'View and manage annual membership application requests, status, and remarks.'}
+              {activeTab === 'referrals' && 'View and delete collaboration and partnership requests submitted by hospital and physician partners.'}
               {activeTab === 'jobs' && 'Create, modify, toggle active status, or delete job vacancy postings.'}
               {activeTab === 'applications' && 'View candidate details, read cover notes, download resume documents, and add recruitment notes.'}
               {activeTab === 'doctors' && 'Create, modify, or delete profiles of medical advisors and clinicians.'}
@@ -860,6 +893,99 @@ export const Dashboard: React.FC = () => {
 
         {/* Tab contents window */}
         <div className="grow p-6 md:p-8 overflow-y-auto">
+          {/* TAB: REFERRALS */}
+          {activeTab === 'referrals' && (
+            <div className="space-y-6">
+              {/* Stats header */}
+              <div className="bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans text-left">
+                <p className="text-xs font-bold text-warm-500">
+                  Total Referral Partnership Requests: <span className="text-primary-600 font-extrabold">{referrals.length}</span>
+                </p>
+              </div>
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs font-sans">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Received Date</th>
+                          <th className="px-6 py-4">Partner Details</th>
+                          <th className="px-6 py-4">Relationship / Type</th>
+                          <th className="px-6 py-4">Message / Collaboration Ideas</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {referrals.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No referral submissions found.
+                            </td>
+                          </tr>
+                        ) : (
+                          referrals.map((item) => {
+                            const dateStr = new Date(item.created_at).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+
+                            return (
+                              <tr key={item.id} className="hover:bg-warm-50/50 align-top">
+                                <td className="px-6 py-4 font-medium text-warm-500 whitespace-nowrap">{dateStr}</td>
+                                <td className="px-6 py-4">
+                                  <div className="space-y-0.5 text-left">
+                                    <p className="font-bold text-warm-900 font-serif text-sm">{item.name}</p>
+                                    {item.organization && (
+                                      <p className="font-semibold text-warm-700">{item.organization}</p>
+                                    )}
+                                    <p className="font-semibold text-warm-650">
+                                      <a href={`tel:${item.phone}`} className="hover:text-primary-600 transition-colors">
+                                        {item.phone}
+                                      </a>
+                                    </p>
+                                    {item.email && (
+                                      <p className="text-warm-500">
+                                        <a href={`mailto:${item.email}`} className="hover:text-primary-600 transition-colors">
+                                          {item.email}
+                                        </a>
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 font-bold text-primary-700 whitespace-nowrap text-left">{item.relationship_type}</td>
+                                <td className="px-6 py-4 text-warm-600 font-medium max-w-sm text-left">
+                                  <p className="whitespace-pre-wrap">{item.message || '-'}</p>
+                                </td>
+                                <td className="px-6 py-4 text-right whitespace-nowrap">
+                                  <button
+                                    onClick={() => handleDeleteReferralSub(item.id)}
+                                    title="Delete record"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TAB: MEMBERSHIPS */}
           {activeTab === 'memberships' && (
             <div className="space-y-6">

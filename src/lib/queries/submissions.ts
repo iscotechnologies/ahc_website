@@ -169,3 +169,39 @@ export async function deleteMembershipSubmission(id: string): Promise<void> {
     throw error;
   }
 }
+
+export interface ReferralSubmission {
+  id: string;
+  name: string;
+  organization: string | null;
+  phone: string;
+  email: string | null;
+  relationship_type: string | null;
+  message: string | null;
+  created_at: string;
+}
+
+export async function getReferralSubmissions(): Promise<ReferralSubmission[]> {
+  const { data, error } = await supabase
+    .from('referral_submissions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching referral submissions:', error);
+    throw error;
+  }
+  return data || [];
+}
+
+export async function deleteReferralSubmission(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('referral_submissions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting referral submission:', error);
+    throw error;
+  }
+}
