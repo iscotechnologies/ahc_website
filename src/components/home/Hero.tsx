@@ -1,39 +1,71 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { getHomeServices, HomeService } from '../../lib/queries/homeServices';
+
+const fallbackCards: Omit<HomeService, 'id'>[] = [
+  {
+    title: 'Elderly Caretaker',
+    description: 'A senior citizen needs an assistant to their day to day activities',
+    image_url: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=400&q=80',
+    image_alt: 'Elderly assistance in daily cooking and living activities',
+    display_order: 1,
+  },
+  {
+    title: 'Home Nursing',
+    description: 'A senior citizen needs an assistant to take care their health care issue',
+    image_url: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=400&q=80',
+    image_alt: 'Registered nurse providing healthcare assistance',
+    display_order: 2,
+  },
+  {
+    title: 'Post Surgical Care',
+    description: 'Post surgical care required when we are under chronic diseases',
+    image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=400&q=80',
+    image_alt: 'Clinical post-surgical recovery care at home',
+    display_order: 3,
+  },
+  {
+    title: 'Newborn Baby Care',
+    description: 'A mother needs an assistant to take care her new born baby',
+    image_url: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=400&q=80',
+    image_alt: 'Comfortable support for newborn baby and mother',
+    display_order: 4,
+  },
+  {
+    title: 'Physiotherapy Care',
+    description: 'A physiotherapy care needs when we feel uncomfort situations',
+    image_url: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80',
+    image_alt: 'Physiotherapy rehabilitation care at home',
+    display_order: 5,
+  },
+];
 
 export const Hero: React.FC = () => {
-  const cards = [
-    {
-      title: 'Elderly Caretaker',
-      description: 'A senior citizen needs an assistant to their day to day activities',
-      imageUrl: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=400&q=80',
-      imageAlt: 'Elderly assistance in daily cooking and living activities',
-    },
-    {
-      title: 'Home Nursing',
-      description: 'A senior citizen needs an assistant to take care their health care issue',
-      imageUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=400&q=80',
-      imageAlt: 'Registered nurse providing healthcare assistance',
-    },
-    {
-      title: 'Post Surgical Care',
-      description: 'Post surgical care required when we are under chronic diseases',
-      imageUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=400&q=80',
-      imageAlt: 'Clinical post-surgical recovery care at home',
-    },
-    {
-      title: 'Newborn Baby Care',
-      description: 'A mother needs an assistant to take care her new born baby',
-      imageUrl: 'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=400&q=80',
-      imageAlt: 'Comfortable support for newborn baby and mother',
-    },
-    {
-      title: 'Physiotherapy Care',
-      description: 'A physiotherapy care needs when we feel uncomfort situations',
-      imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80',
-      imageAlt: 'Physiotherapy rehabilitation care at home',
-    },
-  ];
+  const [cards, setCards] = useState<Omit<HomeService, 'id'>[]>(fallbackCards);
+
+  useEffect(() => {
+    async function loadHomeServices() {
+      try {
+        const data = await getHomeServices();
+        if (data && data.length > 0) {
+          setCards(data);
+        }
+      } catch (err) {
+        console.error('Failed to load homepage services, using fallbacks', err);
+      }
+    }
+    loadHomeServices();
+  }, []);
+
+  const gridColsClass = cards.length === 4 
+    ? 'lg:grid-cols-4' 
+    : cards.length === 3 
+    ? 'lg:grid-cols-3' 
+    : cards.length === 2 
+    ? 'lg:grid-cols-2' 
+    : cards.length === 1 
+    ? 'lg:grid-cols-1' 
+    : 'lg:grid-cols-5';
 
   return (
     <section className="relative bg-linear-to-b from-[#0A3D73] to-[#05254A] py-16 px-4 sm:px-6 lg:px-8 text-center overflow-hidden">
@@ -51,8 +83,8 @@ export const Hero: React.FC = () => {
           THE FOLLOWING SERVICES ARE RECOMMENDING FOR CONDITIONS WHEN :
         </motion.h2>
 
-        {/* 5-Column Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-stretch">
+        {/* Dynamic Grid */}
+        <div className={`grid gap-6 sm:grid-cols-2 md:grid-cols-3 ${gridColsClass} items-stretch`}>
           {cards.map((card, index) => (
             <motion.div
               key={index}
@@ -64,8 +96,8 @@ export const Hero: React.FC = () => {
               {/* Image Container with rounded corners */}
               <div className="aspect-4/3 rounded-2xl overflow-hidden bg-white/10 shadow-inner">
                 <img
-                  src={card.imageUrl}
-                  alt={card.imageAlt}
+                  src={card.image_url || (card as any).imageUrl}
+                  alt={card.image_alt || (card as any).imageAlt || card.title}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>

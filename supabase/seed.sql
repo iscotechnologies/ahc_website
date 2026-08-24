@@ -323,4 +323,50 @@ values
   ('Dr. Vignesh Kumar', '3 months ago', 5, 'Highly reliable team. The physiotherapist they scheduled in Trichy was very patient and explained the recovery exercises very clearly.', 'Trichy', 3);
 
 
+-- 12. Homepage Recommended Services
+insert into homepage_services (id, title, description, image_url, image_alt, display_order)
+values
+  (
+    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    'Elderly Caretaker',
+    'A senior citizen needs an assistant to their day to day activities',
+    'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=400&q=80',
+    'Elderly assistance in daily cooking and living activities',
+    1
+  ),
+  (
+    'b2c3d4e5-f67a-8b9c-0d1e-2f3a4b5c6d7e',
+    'Home Nursing',
+    'A senior citizen needs an assistant to take care their health care issue',
+    'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=400&q=80',
+    'Registered nurse providing healthcare assistance',
+    2
+  ),
+  (
+    'c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+    'Post Surgical Care',
+    'Post surgical care required when we are under chronic diseases',
+    'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=400&q=80',
+    'Clinical post-surgical recovery care at home',
+    3
+  ),
+  (
+    'd4e5f67a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
+    'Newborn Baby Care',
+    'A mother needs an assistant to take care her new born baby',
+    'https://images.unsplash.com/photo-1531983412531-1f49a365ffed?auto=format&fit=crop&w=400&q=80',
+    'Comfortable support for newborn baby and mother',
+    4
+  ),
+  (
+    'e5f67a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
+    'Physiotherapy Care',
+    'A physiotherapy care needs when we feel uncomfort situations',
+    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80',
+    'Physiotherapy rehabilitation care at home',
+    5
+  )
+on conflict (id) do nothing;
+
+
 

@@ -42,3 +42,44 @@ export async function getServiceBySlug(slug: string): Promise<Service | null> {
   }
   return data;
 }
+
+export async function addService(service: Omit<Service, 'id' | 'created_at'>): Promise<Service> {
+  const { data, error } = await supabase
+    .from('services')
+    .insert([service])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding service:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function updateService(id: string, service: Partial<Service>): Promise<Service> {
+  const { data, error } = await supabase
+    .from('services')
+    .update(service)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating service:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function deleteService(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('services')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting service:', error);
+    throw error;
+  }
+}

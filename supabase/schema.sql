@@ -301,3 +301,22 @@ create policy "Enable all for authenticated users" on google_reviews
   for all to authenticated using (true) with check (true);
 
 
+-- 13. Homepage Recommended Services
+create table homepage_services (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text not null,
+  image_url text not null,
+  image_alt text,
+  display_order int default 0,
+  created_at timestamptz default now()
+);
+
+alter table homepage_services enable row level security;
+
+create policy "Enable select for all users" on homepage_services
+  for select using (true);
+create policy "Enable all for authenticated users" on homepage_services
+  for all to authenticated using (true) with check (true);
+
+

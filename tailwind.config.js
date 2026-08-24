@@ -45,8 +45,8 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['Lora', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Ubuntu', 'sans-serif'],
+        sans: ['Ubuntu', 'sans-serif'],
       },
     },
   },

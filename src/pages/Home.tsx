@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import { Hero } from '../components/home/Hero';
 import { DoctorIntro } from '../components/home/DoctorIntro';
 import { ServicesGrid } from '../components/home/ServicesGrid';
-import { CounsellingSpotlight } from '../components/home/CounsellingSpotlight';
 import { CareTakerSpotlight } from '../components/home/CareTakerSpotlight';
 import { TeamPreview } from '../components/home/TeamPreview';
 import { TestimonialsGallery } from '../components/home/TestimonialsGallery';
@@ -27,7 +26,6 @@ export const Home: React.FC = () => {
         <Hero />
         <DoctorIntro />
         <ServicesGrid />
-        <CounsellingSpotlight />
         <div className="bg-linear-to-b from-[#2774ae] via-[#002e5d] to-[#002e5d] py-8 border-y border-white/10">
           <CareTakerSpotlight />
           <TeamPreview />

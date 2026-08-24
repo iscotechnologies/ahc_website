@@ -7,6 +7,8 @@ import { getTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, Team
 import { getTestimonials, addTestimonial, updateTestimonial, deleteTestimonial, Testimonial } from '../../lib/queries/testimonials';
 import { getGoogleReviews, addGoogleReview, updateGoogleReview, deleteGoogleReview, GoogleReview } from '../../lib/queries/reviews';
 import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } from '../../lib/queries/hospitals';
+import { getHomeServices, addHomeService, updateHomeService, deleteHomeService, HomeService } from '../../lib/queries/homeServices';
+import { getServices, addService, updateService, deleteService, Service } from '../../lib/queries/services';
 import { uploadPhoto } from '../../lib/queries/storage';
 import { 
   getContactSubmissions, 
@@ -50,7 +52,8 @@ import {
   Briefcase,
   FileText,
   Shield,
-  Star
+  Star,
+  Heart
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -137,7 +140,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -161,6 +164,14 @@ export const Dashboard: React.FC = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [reviewsList, setReviewsList] = useState<GoogleReview[]>([]);
   const [reviewForm, setReviewForm] = useState<Partial<GoogleReview> | null>(null);
+
+  // Homepage services states
+  const [homeServicesList, setHomeServicesList] = useState<HomeService[]>([]);
+  const [homeServiceForm, setHomeServiceForm] = useState<Partial<HomeService> | null>(null);
+
+  // Main Services Offered states
+  const [servicesList, setServicesList] = useState<Service[]>([]);
+  const [serviceForm, setServiceForm] = useState<Partial<Service> | null>(null);
 
   // Modals / Edit states
   const [doctorForm, setDoctorForm] = useState<Partial<TeamMember> | null>(null);
@@ -212,6 +223,12 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'reviews') {
         const data = await getGoogleReviews();
         setReviewsList(data);
+      } else if (activeTab === 'home_services') {
+        const data = await getHomeServices();
+        setHomeServicesList(data);
+      } else if (activeTab === 'services') {
+        const data = await getServices();
+        setServicesList(data);
       }
     } catch (err) {
       console.error(err);
@@ -413,6 +430,86 @@ export const Dashboard: React.FC = () => {
       loadTabDynamicData();
     } catch (err) {
       showToast('Failed to delete hospital.', 'error');
+    }
+  };
+
+  // Homepage Services CRUD
+  const handleSaveHomeService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!homeServiceForm || !homeServiceForm.title) return;
+
+    try {
+      const payload = {
+        title: homeServiceForm.title,
+        description: homeServiceForm.description || '',
+        image_url: homeServiceForm.image_url || '',
+        image_alt: homeServiceForm.image_alt || '',
+        display_order: Number(homeServiceForm.display_order ?? 0),
+      };
+
+      if (homeServiceForm.id) {
+        await updateHomeService(homeServiceForm.id, payload);
+        showToast('Homepage service card updated!', 'success');
+      } else {
+        await addHomeService(payload);
+        showToast('New homepage service card added!', 'success');
+      }
+      setHomeServiceForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to save homepage service card.', 'error');
+    }
+  };
+
+  const handleDeleteHomeService = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this homepage service card?')) return;
+    try {
+      await deleteHomeService(id);
+      showToast('Homepage service card deleted.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete homepage service card.', 'error');
+    }
+  };
+
+  // Main Services CRUD
+  const handleSaveService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceForm || !serviceForm.title || !serviceForm.slug) return;
+
+    try {
+      const payload = {
+        slug: serviceForm.slug,
+        title: serviceForm.title,
+        short_description: serviceForm.short_description || '',
+        full_description: serviceForm.full_description || '',
+        hero_image_url: serviceForm.hero_image_url || '',
+        icon: serviceForm.icon || 'Heart',
+        display_order: Number(serviceForm.display_order ?? 0),
+      };
+
+      if (serviceForm.id) {
+        await updateService(serviceForm.id, payload);
+        showToast('Service details updated!', 'success');
+      } else {
+        await addService(payload);
+        showToast('New service added!', 'success');
+      }
+      setServiceForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to save service details.', 'error');
+    }
+  };
+
+  const handleDeleteService = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this service? This will delete the service and all its content.')) return;
+    try {
+      await deleteService(id);
+      showToast('Service deleted.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to delete service.', 'error');
     }
   };
 
@@ -665,6 +762,30 @@ export const Dashboard: React.FC = () => {
               <Star className="h-4.5 w-4.5" />
               <span>Google Reviews</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('home_services')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'home_services' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Home className="h-4.5 w-4.5" />
+              <span>Home Services</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('services')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'services' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Heart className="h-4.5 w-4.5" />
+              <span>Services Offered</span>
+            </button>
           </nav>
         </div>
 
@@ -707,6 +828,8 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'youtube' && 'Patient YouTube Stories'}
               {activeTab === 'hospitals' && 'Partner Tie-up Hospitals'}
               {activeTab === 'reviews' && 'Google Reviews Manager'}
+              {activeTab === 'home_services' && 'Homepage Services Manager'}
+              {activeTab === 'services' && 'Services Offered Manager'}
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
@@ -718,6 +841,8 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'youtube' && 'Manage patients video stories and YouTube video IDs on the homepage.'}
               {activeTab === 'hospitals' && 'Manage tie-up hospitals list displayed under our Clinical Associates page.'}
               {activeTab === 'reviews' && 'Create, modify, toggle order, or delete text-based verified Google reviews.'}
+              {activeTab === 'home_services' && 'Create, edit, delete, or upload images for the recommended services displayed on the homepage.'}
+              {activeTab === 'services' && 'Create, edit, delete, or upload hero images for all main services offered.'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -2624,6 +2749,387 @@ export const Dashboard: React.FC = () => {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteReview(item.id)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 10: HOMEPAGE SERVICES */}
+          {activeTab === 'home_services' && (
+            <div className="space-y-6">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Homepage Recommended Services ({homeServicesList.length} cards)
+                </p>
+                <button
+                  onClick={() => setHomeServiceForm({ title: '', description: '', image_url: '', image_alt: '', display_order: homeServicesList.length + 1 })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Service Card</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {homeServiceForm && (
+                <form onSubmit={handleSaveHomeService} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md text-left space-y-6 animate-fadeIn font-sans">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                    <h3 className="text-base font-bold text-warm-950">
+                      {homeServiceForm.id ? `Edit Homepage Card: ${homeServiceForm.title}` : 'Add New Homepage Card'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setHomeServiceForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Card Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Elderly Caretaker"
+                        value={homeServiceForm.title || ''}
+                        onChange={(e) => setHomeServiceForm({ ...homeServiceForm, title: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Description</label>
+                      <textarea
+                        rows={2}
+                        required
+                        placeholder="A senior citizen needs an assistant to their day to day activities"
+                        value={homeServiceForm.description || ''}
+                        onChange={(e) => setHomeServiceForm({ ...homeServiceForm, description: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <FileUploadInput
+                        id="homeserv-photo"
+                        label="Image File Upload / Image URL"
+                        value={homeServiceForm.image_url || ''}
+                        onChange={(url) => setHomeServiceForm({ ...homeServiceForm, image_url: url })}
+                        folder="homepage_services"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Image Alt Text</label>
+                      <input
+                        type="text"
+                        placeholder="Elderly assistance in daily cooking and living activities"
+                        value={homeServiceForm.image_alt || ''}
+                        onChange={(e) => setHomeServiceForm({ ...homeServiceForm, image_alt: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Display Order</label>
+                      <input
+                        type="number"
+                        required
+                        value={homeServiceForm.display_order ?? 0}
+                        onChange={(e) => setHomeServiceForm({ ...homeServiceForm, display_order: Number(e.target.value) })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-warm-100 flex justify-end gap-2 text-xs font-bold font-sans">
+                    <button
+                      type="button"
+                      onClick={() => setHomeServiceForm(null)}
+                      className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{homeServiceForm.id ? 'Update Card' : 'Save Card'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto font-sans">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Image</th>
+                          <th className="px-6 py-4">Card Title</th>
+                          <th className="px-6 py-4">Description</th>
+                          <th className="px-6 py-4 text-center">Order</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {homeServicesList.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No homepage service cards found in the database. Click "Add Service Card" to get started.
+                            </td>
+                          </tr>
+                        ) : (
+                          homeServicesList.map((item) => (
+                            <tr key={item.id} className="hover:bg-warm-50/50 align-middle">
+                              <td className="px-6 py-4">
+                                {item.image_url ? (
+                                  <img
+                                    src={item.image_url}
+                                    alt={item.title}
+                                    className="h-10 w-14 object-cover rounded-lg border border-warm-200 bg-warm-50"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-14 rounded-lg bg-warm-100 flex items-center justify-center text-warm-400">
+                                    No Image
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 font-bold text-warm-900 font-serif text-sm whitespace-nowrap">{item.title}</td>
+                              <td className="px-6 py-4 text-warm-650 max-w-md font-medium">
+                                <p className="line-clamp-2">{item.description}</p>
+                              </td>
+                              <td className="px-6 py-4 text-center font-bold text-warm-700">{item.display_order}</td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setHomeServiceForm(item)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteHomeService(item.id)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 11: MAIN SERVICES OFFERED */}
+          {activeTab === 'services' && (
+            <div className="space-y-6">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Services Offered ({servicesList.length} items)
+                </p>
+                <button
+                  onClick={() => setServiceForm({ title: '', slug: '', short_description: '', full_description: '', hero_image_url: '', icon: 'Heart', display_order: servicesList.length + 1 })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Service</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {serviceForm && (
+                <form onSubmit={handleSaveService} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md text-left space-y-6 animate-fadeIn font-sans">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                    <h3 className="text-base font-bold text-warm-950">
+                      {serviceForm.id ? `Edit Service Details: ${serviceForm.title}` : 'Add New Service'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setServiceForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Service Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Trained Care Taker"
+                        value={serviceForm.title || ''}
+                        onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Service Slug (URL Identifier)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="trained-caretaker"
+                        value={serviceForm.slug || ''}
+                        onChange={(e) => setServiceForm({ ...serviceForm, slug: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Short Description (Summary)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Elderly care and post-surgical support with dignity at home by professional caretakers."
+                        value={serviceForm.short_description || ''}
+                        onChange={(e) => setServiceForm({ ...serviceForm, short_description: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Full Description (About page details)</label>
+                      <textarea
+                        rows={5}
+                        required
+                        placeholder="Detail about the services offered, benefits, procedures, pricing details, etc..."
+                        value={serviceForm.full_description || ''}
+                        onChange={(e) => setServiceForm({ ...serviceForm, full_description: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <FileUploadInput
+                        id="serv-photo"
+                        label="Hero Service Image Upload / Image URL"
+                        value={serviceForm.hero_image_url || ''}
+                        onChange={(url) => setServiceForm({ ...serviceForm, hero_image_url: url })}
+                        folder="services"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Lucide Icon Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Heart, Activity, UserCheck, Accessibility, Users, Shield, Wrench"
+                        value={serviceForm.icon || 'Heart'}
+                        onChange={(e) => setServiceForm({ ...serviceForm, icon: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Display Order</label>
+                      <input
+                        type="number"
+                        required
+                        value={serviceForm.display_order ?? 0}
+                        onChange={(e) => setServiceForm({ ...serviceForm, display_order: Number(e.target.value) })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-warm-100 flex justify-end gap-2 text-xs font-bold font-sans">
+                    <button
+                      type="button"
+                      onClick={() => setServiceForm(null)}
+                      className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{serviceForm.id ? 'Update Service' : 'Save Service'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto font-sans">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Image</th>
+                          <th className="px-6 py-4">Icon</th>
+                          <th className="px-6 py-4">Service Title</th>
+                          <th className="px-6 py-4">Slug</th>
+                          <th className="px-6 py-4">Short Description</th>
+                          <th className="px-6 py-4 text-center">Order</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {servicesList.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No services found in database. Click "Add New Service" to get started.
+                            </td>
+                          </tr>
+                        ) : (
+                          servicesList.map((item) => (
+                            <tr key={item.id} className="hover:bg-warm-50/50 align-middle">
+                              <td className="px-6 py-4">
+                                {item.hero_image_url ? (
+                                  <img
+                                    src={item.hero_image_url}
+                                    alt={item.title}
+                                    className="h-10 w-14 object-cover rounded-lg border border-warm-200 bg-warm-50"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-14 rounded-lg bg-warm-100 flex items-center justify-center text-warm-400">
+                                    No Image
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 font-bold text-warm-700 whitespace-nowrap">{item.icon}</td>
+                              <td className="px-6 py-4 font-bold text-warm-900 font-serif text-sm whitespace-nowrap">{item.title}</td>
+                              <td className="px-6 py-4 text-primary-600 font-bold whitespace-nowrap">/{item.slug}</td>
+                              <td className="px-6 py-4 text-warm-650 max-w-sm font-medium">
+                                <p className="line-clamp-2">{item.short_description}</p>
+                              </td>
+                              <td className="px-6 py-4 text-center font-bold text-warm-700">{item.display_order}</td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setServiceForm(item)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteService(item.id)}
                                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
