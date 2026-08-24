@@ -139,15 +139,15 @@ export const TeamPreview: React.FC = () => {
 
                   {/* Profile info */}
                   <div className="space-y-1">
+                    <p className="text-[11px] font-semibold text-primary-300 uppercase tracking-wide">
+                      {member.specialty}
+                    </p>
                     <h3 className="font-serif text-sm font-bold text-white leading-tight">
                       {member.name}
                     </h3>
                     {member.qualification && (
                       <p className="text-[11px] font-bold text-primary-200">{member.qualification}</p>
                     )}
-                    <p className="text-[11px] font-semibold text-primary-300 uppercase tracking-wide">
-                      {member.specialty}
-                    </p>
                   </div>
                 </div>
 
