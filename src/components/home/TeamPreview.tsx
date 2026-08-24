@@ -132,22 +132,22 @@ export const TeamPreview: React.FC = () => {
                         <User className="h-10 w-10" />
                       </div>
                     )}
-                    <span className="absolute top-2 left-2 rounded-lg bg-warm-900/85 px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs">
-                      {member.role_tag}
-                    </span>
                   </div>
 
                   {/* Profile info */}
                   <div className="space-y-1">
-                    <p className="text-[11px] font-semibold text-primary-300 uppercase tracking-wide">
-                      {member.specialty}
-                    </p>
                     <h3 className="font-serif text-sm font-bold text-white leading-tight">
                       {member.name}
                     </h3>
                     {member.qualification && (
                       <p className="text-[11px] font-bold text-primary-200">{member.qualification}</p>
                     )}
+                    <p className="text-[11px] font-semibold text-primary-300 uppercase tracking-wide">
+                      {member.specialty}
+                    </p>
+                    <p className="text-[10px] font-bold text-primary-400/80 uppercase tracking-widest mt-0.5">
+                      {member.role_tag}
+                    </p>
                   </div>
                 </div>
 

@@ -263,12 +263,6 @@ export const ClinicalAssociates: React.FC = () => {
                             )}
                           </div>
                           <div className="space-y-1">
-                            <span className="inline-block rounded bg-warm-900/80 px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
-                              {member.role_tag}
-                            </span>
-                            <p className="text-[11px] font-bold text-primary-300 uppercase tracking-wide">
-                              {member.specialty}
-                            </p>
                             <h3 className="font-serif text-lg font-bold text-white leading-tight">
                               {member.name}
                             </h3>
@@ -277,6 +271,12 @@ export const ClinicalAssociates: React.FC = () => {
                                 {member.qualification}
                               </p>
                             )}
+                            <p className="text-[11px] font-bold text-primary-300 uppercase tracking-wide">
+                              {member.specialty}
+                            </p>
+                            <p className="text-[10px] font-bold text-primary-400/80 uppercase tracking-widest mt-0.5">
+                              {member.role_tag}
+                            </p>
                           </div>
                         </div>
 
