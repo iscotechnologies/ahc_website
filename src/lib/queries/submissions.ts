@@ -27,6 +27,65 @@ export interface ReferralSubmissionInput {
   message?: string;
 }
 
+/**
+ * Helper to send email notification on new submission via EmailJS REST API
+ */
+async function sendEmailNotification(params: {
+  form_type: string;
+  name: string;
+  phone: string;
+  email?: string;
+  details_html: string;
+}): Promise<void> {
+  const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+  // If credentials are not set or are default placeholders, skip sending
+  if (
+    !serviceId || 
+    !templateId || 
+    !publicKey || 
+    serviceId === 'your_service_id' || 
+    templateId === 'your_template_id' || 
+    publicKey === 'your_public_key'
+  ) {
+    console.warn('EmailJS environment variables not set. Skipping email notification.');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: serviceId,
+        template_id: templateId,
+        user_id: publicKey,
+        template_params: {
+          form_type: params.form_type,
+          name: params.name,
+          phone: params.phone,
+          email: params.email || 'Not provided',
+          submitted_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+          details_html: params.details_html,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('EmailJS request failed:', response.status, errorText);
+    } else {
+      console.log(`Email notification sent successfully for ${params.form_type}`);
+    }
+  } catch (err) {
+    console.error('Error calling EmailJS REST API:', err);
+  }
+}
+
 export async function submitContact(input: ContactSubmissionInput): Promise<void> {
   const { error } = await supabase
     .from('contact_submissions')
@@ -36,6 +95,19 @@ export async function submitContact(input: ContactSubmissionInput): Promise<void
     console.error('Error submitting contact form:', error);
     throw error;
   }
+
+  // Send Email Notification (Async, non-blocking)
+  const detailsHtml = `
+    <p><strong>Location:</strong> ${input.location || 'N/A'}</p>
+    <p><strong>Message:</strong> ${input.message || 'N/A'}</p>
+  `;
+  sendEmailNotification({
+    form_type: 'Contact Enquiry',
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    details_html: detailsHtml,
+  }).catch((err) => console.error('Email sending error:', err));
 }
 
 export async function submitMembership(input: MembershipSubmissionInput): Promise<void> {
@@ -47,6 +119,20 @@ export async function submitMembership(input: MembershipSubmissionInput): Promis
     console.error('Error submitting membership form:', error);
     throw error;
   }
+
+  // Send Email Notification (Async, non-blocking)
+  const detailsHtml = `
+    <p><strong>Plan Tier:</strong> ${input.plan_tier || 'N/A'}</p>
+    <p><strong>Preferred Start Date:</strong> ${input.preferred_start_date || 'Immediate'}</p>
+    <p><strong>Residential Address:</strong><br />${input.address || 'N/A'}</p>
+  `;
+  sendEmailNotification({
+    form_type: 'Annual Membership Enrollment',
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    details_html: detailsHtml,
+  }).catch((err) => console.error('Email sending error:', err));
 }
 
 export async function submitReferral(input: ReferralSubmissionInput): Promise<void> {
@@ -58,6 +144,20 @@ export async function submitReferral(input: ReferralSubmissionInput): Promise<vo
     console.error('Error submitting referral form:', error);
     throw error;
   }
+
+  // Send Email Notification (Async, non-blocking)
+  const detailsHtml = `
+    <p><strong>Organization / Hospital Name:</strong> ${input.organization || 'N/A'}</p>
+    <p><strong>Relationship / Partner Type:</strong> ${input.relationship_type || 'N/A'}</p>
+    <p><strong>Referral Details / Collaboration Ideas:</strong><br />${input.message || 'N/A'}</p>
+  `;
+  sendEmailNotification({
+    form_type: 'Referral Setup Request',
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    details_html: detailsHtml,
+  }).catch((err) => console.error('Email sending error:', err));
 }
 
 export interface ContactSubmission {
