@@ -58,7 +58,8 @@ import {
   Shield,
   Star,
   Heart,
-  Handshake
+  Handshake,
+  Image
 } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -145,7 +146,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services' | 'partners'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services' | 'partners' | 'page_images'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -154,6 +155,9 @@ export const Dashboard: React.FC = () => {
   const [showMarquee, setShowMarquee] = useState(false);
   const [marqueeNotification, setMarqueeNotification] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
+  const [aboutImageUrl, setAboutImageUrl] = useState('');
+  const [careerImageUrl, setCareerImageUrl] = useState('');
+  const [savingPageImages, setSavingPageImages] = useState(false);
 
   // Database lists
   const [doctors, setDoctors] = useState<TeamMember[]>([]);
@@ -198,6 +202,8 @@ export const Dashboard: React.FC = () => {
       setUnderMaintenance(siteSettings.under_maintenance);
       setShowMarquee(siteSettings.show_marquee);
       setMarqueeNotification(siteSettings.marquee_notification || '');
+      setAboutImageUrl(siteSettings.about_image_url || '');
+      setCareerImageUrl(siteSettings.career_image_url || '');
     }
   }, [siteSettings]);
 
@@ -280,6 +286,24 @@ export const Dashboard: React.FC = () => {
       showToast('Failed to update site settings.', 'error');
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  // Save Page Images
+  const handleSavePageImages = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingPageImages(true);
+    try {
+      await updateSettings({
+        about_image_url: aboutImageUrl,
+        career_image_url: careerImageUrl,
+      });
+      await refreshSettings();
+      showToast('Page images updated successfully!', 'success');
+    } catch (err) {
+      showToast('Failed to update page images.', 'error');
+    } finally {
+      setSavingPageImages(false);
     }
   };
 
@@ -731,6 +755,18 @@ export const Dashboard: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('page_images')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'page_images' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Image className="h-4.5 w-4.5" />
+              <span>Page Images</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('enquiries')}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 activeTab === 'enquiries' 
@@ -909,6 +945,7 @@ export const Dashboard: React.FC = () => {
           <div className="text-left">
             <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-warm-900 capitalize">
               {activeTab === 'settings' && 'General Settings'}
+              {activeTab === 'page_images' && 'Manage Page Images'}
               {activeTab === 'enquiries' && 'Customer Enquiries'}
               {activeTab === 'memberships' && 'Membership Enrollments'}
               {activeTab === 'referrals' && 'Referral Partner Requests'}
@@ -924,6 +961,7 @@ export const Dashboard: React.FC = () => {
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
+              {activeTab === 'page_images' && 'Upload and update section images for About Us and Careers pages.'}
               {activeTab === 'enquiries' && 'View consultation requests, update status, and manage client follow-up remarks.'}
               {activeTab === 'memberships' && 'View and manage annual membership application requests, status, and remarks.'}
               {activeTab === 'referrals' && 'View and delete collaboration and partnership requests submitted by hospital and physician partners.'}
@@ -2153,6 +2191,66 @@ export const Dashboard: React.FC = () => {
                 >
                   {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   <span>Save Settings Changes</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB: PAGE IMAGES */}
+          {activeTab === 'page_images' && (
+            <form onSubmit={handleSavePageImages} className="max-w-2xl bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-xs text-left space-y-6">
+              <h3 className="font-serif text-lg font-bold text-warm-950 border-b border-warm-100 pb-3">Update Page Section Images</h3>
+
+              {/* About Us Page Image */}
+              <div className="space-y-4 font-sans">
+                <h4 className="text-sm font-bold text-warm-900 font-serif">About Us Page</h4>
+                <p className="text-xs text-warm-600 leading-relaxed">
+                  This image is displayed in the "Supporting Patients & Families" section on the About Us page.
+                </p>
+                <FileUploadInput
+                  id="about-section-image"
+                  label="About Section Image"
+                  value={aboutImageUrl}
+                  onChange={(url) => setAboutImageUrl(url)}
+                  folder="about"
+                />
+                {aboutImageUrl && (
+                  <div className="mt-2 rounded-2xl border border-warm-200 overflow-hidden max-w-xs aspect-video bg-warm-50">
+                    <img src={aboutImageUrl} alt="About section preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              <hr className="border-warm-150" />
+
+              {/* Careers Page Image */}
+              <div className="space-y-4 font-sans">
+                <h4 className="text-sm font-bold text-warm-900 font-serif">Careers Page</h4>
+                <p className="text-xs text-warm-600 leading-relaxed">
+                  This image is displayed in the "Why Work With Ayusya?" section on the Careers page.
+                </p>
+                <FileUploadInput
+                  id="career-section-image"
+                  label="Careers Section Image"
+                  value={careerImageUrl}
+                  onChange={(url) => setCareerImageUrl(url)}
+                  folder="careers"
+                />
+                {careerImageUrl && (
+                  <div className="mt-2 rounded-2xl border border-warm-200 overflow-hidden max-w-xs aspect-video bg-warm-50">
+                    <img src={careerImageUrl} alt="Careers section preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-warm-100 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingPageImages}
+                  className="inline-flex items-center gap-2 rounded-xl bg-warm-900 hover:bg-warm-850 px-5 py-3 text-sm font-semibold text-white shadow-md transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+                >
+                  {savingPageImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  <span>Save Page Images</span>
                 </button>
               </div>
             </form>

@@ -8,6 +8,8 @@ export interface SiteSettings {
   hero_title: string;
   hero_description: string;
   hero_image_url: string;
+  about_image_url?: string;
+  career_image_url?: string;
   updated_at?: string;
 }
 
@@ -17,7 +19,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   show_marquee: false,
   hero_title: 'Best Home Health Care in Chennai & Madurai',
   hero_description: 'Professional, compassionate medical and caretaker services in the comfort of your home. Recover with dignity, supported by our experienced clinical team.',
-  hero_image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80'
+  hero_image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80',
+  about_image_url: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80',
+  career_image_url: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80'
 };
 
 export async function getSettings(): Promise<SiteSettings> {

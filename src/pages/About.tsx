@@ -18,8 +18,10 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AnimatedSection } from '../components/shared/AnimatedSection';
+import { useSettings } from '../context/SettingsContext';
 
 export const About: React.FC = () => {
+  const { siteSettings } = useSettings();
   const careEmphases = [
     {
       title: 'Patient-Centered Care',
@@ -295,7 +297,7 @@ export const About: React.FC = () => {
               <div className="lg:col-span-5">
                 <div className="aspect-4/3 rounded-3xl overflow-hidden shadow-md border border-warm-200 bg-warm-100">
                   <img
-                    src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80"
+                    src={siteSettings?.about_image_url || "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80"}
                     alt="Elderly support and patient caretaker at home"
                     className="w-full h-full object-cover"
                   />

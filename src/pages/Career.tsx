@@ -7,6 +7,7 @@ import { Briefcase, MapPin, Clock, Upload, X, CheckCircle, AlertCircle } from 'l
 import { getJobOpenings, submitJobApplication, uploadResume, JobOpening } from '../lib/queries/jobs';
 import { useToast } from '../components/shared/Toast';
 import { AnimatedSection } from '../components/shared/AnimatedSection';
+import { useSettings } from '../context/SettingsContext';
 
 const applicationSchema = zod.object({
   name: zod.string().min(2, 'Name must be at least 2 characters'),
@@ -48,6 +49,7 @@ const fallbackJobs: JobOpening[] = [
 ];
 
 export const Career: React.FC = () => {
+  const { siteSettings } = useSettings();
   const { showToast } = useToast();
   const [jobs, setJobs] = useState<JobOpening[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,7 +167,7 @@ export const Career: React.FC = () => {
           <AnimatedSection direction="up" className="rounded-3xl border border-warm-200 bg-white p-6 sm:p-8 shadow-xs flex flex-col md:flex-row gap-8 items-center text-left">
             <div className="w-full md:w-1/3 rounded-2xl overflow-hidden h-48 bg-warm-100">
               <img
-                src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=400&q=80"
+                src={siteSettings?.career_image_url || "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80"}
                 alt="Ayusya clinical community culture"
                 className="w-full h-full object-cover"
               />
