@@ -99,9 +99,14 @@ export const Contact: React.FC = () => {
                   <MapPin className="h-4.5 w-4.5 text-primary-500" />
                   <span>Main Center (Chennai)</span>
                 </h3>
-                <p className="text-xs text-warm-600 leading-relaxed">
+                <a
+                  href="https://maps.app.goo.gl/xruftuwdNpvEf5PA8?g_st=aw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-warm-600 hover:text-primary-600 hover:underline leading-relaxed block transition-colors"
+                >
                   No 15, North Usman Road, T. Nagar, Chennai - 600017
-                </p>
+                </a>
                 <div className="border-t border-warm-100 pt-3 flex items-center justify-between text-[11px] text-warm-500 font-medium">
                   <span>Advisory coordinates in:</span>
                   <span>Chennai / Madurai</span>
@@ -124,7 +129,7 @@ export const Contact: React.FC = () => {
           <AnimatedSection direction="up" className="rounded-3xl border border-warm-200 bg-white p-2 shadow-sm overflow-hidden h-87.5">
             <iframe
               title="Ayusya Google Map Navigation"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.837894951478!2d80.23114981482279!3d13.04598179080753!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52665e771480f7%3A0x6e24672e811c7501!2sT.%20Nagar%2C%20Chennai%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1680000000000!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.9362802623314!2d80.2375786!3d13.0397279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52675edeadd6ed%3A0xd506c72f52426b08!2shome%20care%20service%20%7C%20home%20nursing%20services%20%7C%20patient%20care%20in%20Trichy!5e0!3m2!1sen!2sin!4v1787634046706!5m2!1sen!2sin"
               width="100%"
               height="100%"
               style={{ border: 0 }}
