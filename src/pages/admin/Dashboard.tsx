@@ -9,6 +9,7 @@ import { getGoogleReviews, addGoogleReview, updateGoogleReview, deleteGoogleRevi
 import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } from '../../lib/queries/hospitals';
 import { getHomeServices, addHomeService, updateHomeService, deleteHomeService, HomeService } from '../../lib/queries/homeServices';
 import { getServices, addService, updateService, deleteService, Service } from '../../lib/queries/services';
+import { getPartners, addPartner, updatePartner, deletePartner, Partner } from '../../lib/queries/partners';
 import { uploadPhoto } from '../../lib/queries/storage';
 import { 
   getContactSubmissions, 
@@ -144,7 +145,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services' | 'partners'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -177,6 +178,10 @@ export const Dashboard: React.FC = () => {
   // Main Services Offered states
   const [servicesList, setServicesList] = useState<Service[]>([]);
   const [serviceForm, setServiceForm] = useState<Partial<Service> | null>(null);
+
+  // Partners states
+  const [partnersList, setPartnersList] = useState<Partner[]>([]);
+  const [partnerForm, setPartnerForm] = useState<Partial<Partner> | null>(null);
 
   // Modals / Edit states
   const [doctorForm, setDoctorForm] = useState<Partial<TeamMember> | null>(null);
@@ -237,6 +242,9 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'services') {
         const data = await getServices();
         setServicesList(data);
+      } else if (activeTab === 'partners') {
+        const data = await getPartners();
+        setPartnersList(data);
       }
     } catch (err) {
       console.error(err);
@@ -438,6 +446,44 @@ export const Dashboard: React.FC = () => {
       loadTabDynamicData();
     } catch (err) {
       showToast('Failed to delete hospital.', 'error');
+    }
+  };
+
+  // Partners CRUD
+  const handleSavePartner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!partnerForm || !partnerForm.name || !partnerForm.logo_url) return;
+
+    try {
+      const payload = {
+        name: partnerForm.name,
+        logo_url: partnerForm.logo_url,
+        website_url: partnerForm.website_url || '',
+        display_order: Number(partnerForm.display_order ?? 0),
+      };
+
+      if (partnerForm.id) {
+        await updatePartner(partnerForm.id, payload);
+        showToast('Partner details updated successfully!', 'success');
+      } else {
+        await addPartner(payload);
+        showToast('New Partner added successfully!', 'success');
+      }
+      setPartnerForm(null);
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to save partner details.', 'error');
+    }
+  };
+
+  const handleDeletePartner = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this partner?')) return;
+    try {
+      await deletePartner(id);
+      showToast('Partner removed successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err) {
+      showToast('Failed to remove partner.', 'error');
     }
   };
 
@@ -783,6 +829,18 @@ export const Dashboard: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('partners')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'partners' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <Handshake className="h-4.5 w-4.5" />
+              <span>Clinical Partners</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('reviews')}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 activeTab === 'reviews' 
@@ -862,6 +920,7 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'reviews' && 'Google Reviews Manager'}
               {activeTab === 'home_services' && 'Homepage Services Manager'}
               {activeTab === 'services' && 'Services Offered Manager'}
+              {activeTab === 'partners' && 'Clinical Partners & Hospital Networks'}
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
@@ -876,6 +935,7 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'reviews' && 'Create, modify, toggle order, or delete text-based verified Google reviews.'}
               {activeTab === 'home_services' && 'Create, edit, delete, or upload images for the recommended services displayed on the homepage.'}
               {activeTab === 'services' && 'Create, edit, delete, or upload hero images for all main services offered.'}
+              {activeTab === 'partners' && 'Manage clinical partner and network hospital logos displayed in the homepage marquee.'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -3255,6 +3315,178 @@ export const Dashboard: React.FC = () => {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteService(item.id)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 12: CLINICAL PARTNERS */}
+          {activeTab === 'partners' && (
+            <div className="space-y-6 text-left">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs font-sans">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Clinical Partners ({partnersList.length} items)
+                </p>
+                <button
+                  onClick={() => setPartnerForm({ name: '', logo_url: '', website_url: '', display_order: partnersList.length + 1 })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Partner</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {partnerForm && (
+                <form onSubmit={handleSavePartner} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md space-y-6 animate-fadeIn font-sans">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                    <h3 className="text-base font-bold text-warm-950">
+                      {partnerForm.id ? `Edit Partner: ${partnerForm.name}` : 'Add New Partner'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setPartnerForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Partner Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Appasamy Hospital"
+                        value={partnerForm.name || ''}
+                        onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Website URL (Optional)</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com"
+                        value={partnerForm.website_url || ''}
+                        onChange={(e) => setPartnerForm({ ...partnerForm, website_url: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <FileUploadInput
+                        id="partner-logo"
+                        label="Partner Logo Upload / Logo URL"
+                        value={partnerForm.logo_url || ''}
+                        onChange={(url) => setPartnerForm({ ...partnerForm, logo_url: url })}
+                        folder="partners"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block font-sans">Display Order</label>
+                      <input
+                        type="number"
+                        required
+                        value={partnerForm.display_order ?? 0}
+                        onChange={(e) => setPartnerForm({ ...partnerForm, display_order: Number(e.target.value) })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-warm-100 flex justify-end gap-2 text-xs font-bold font-sans">
+                    <button
+                      type="button"
+                      onClick={() => setPartnerForm(null)}
+                      className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{partnerForm.id ? 'Update Partner' : 'Save Partner'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs animate-fadeIn font-sans">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Logo</th>
+                          <th className="px-6 py-4">Partner Name</th>
+                          <th className="px-6 py-4">Website URL</th>
+                          <th className="px-6 py-4 text-center">Display Order</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {partnersList.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No partners found in database. Click "Add New Partner" to get started.
+                            </td>
+                          </tr>
+                        ) : (
+                          partnersList.map((item) => (
+                            <tr key={item.id} className="hover:bg-warm-50/50 align-middle">
+                              <td className="px-6 py-4">
+                                {item.logo_url ? (
+                                  <img
+                                    src={item.logo_url}
+                                    alt={item.name}
+                                    className="h-10 w-10 object-cover rounded-lg border border-warm-200 bg-warm-50"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-10 rounded-lg bg-warm-100 flex items-center justify-center text-warm-400">
+                                    No Logo
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 font-bold text-warm-900 text-sm whitespace-nowrap">{item.name}</td>
+                              <td className="px-6 py-4 text-primary-600 font-bold whitespace-nowrap">
+                                {item.website_url ? (
+                                  <a href={item.website_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    {item.website_url}
+                                  </a>
+                                ) : (
+                                  <span className="text-warm-400 font-normal">N/A</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-center font-bold text-warm-700">{item.display_order}</td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setPartnerForm(item)}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePartner(item.id)}
                                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
