@@ -8,19 +8,19 @@ export const FindUs: React.FC = () => {
   const offices = [
     {
       city: 'Chennai (Head Office)',
-      address: 'No 15, North Usman Road, T. Nagar, Chennai - 600017',
+      address: 'Raja Street, T Nagar, Chennai 600017',
       phone: '+91 99431 61027',
       hours: '24/7 Care Coordination',
-      mapUrl: 'https://maps.app.goo.gl/xruftuwdNpvEf5PA8?g_st=aw',
-      embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.9362802623314!2d80.2375786!3d13.0397279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52675edeadd6ed%3A0xd506c72f52426b08!2shome%20care%20service%20%7C%20home%20nursing%20services%20%7C%20patient%20care%20in%20Trichy!5e0!3m2!1sen!2sin!4v1787634046706!5m2!1sen!2sin',
+      mapUrl: 'https://maps.google.com/?q=Raja+Street,+T+Nagar,+Chennai+600017',
+      embedUrl: 'https://maps.google.com/maps?q=Raja%20Street,%20T%20Nagar,%20Chennai%20600017&t=&z=15&ie=UTF8&iwloc=&output=embed',
     },
     {
       city: 'Madurai Office',
-      address: '45, K.K. Nagar East, Madurai - 625020',
+      address: 'Maligai Thani Veedugal, Avaniyapuram Bypass Rd, Madurai, Tamil Nadu 625012',
       phone: '+91 99431 61027',
       hours: '8:00 AM - 9:00 PM',
-      mapUrl: 'https://maps.app.goo.gl/XEAX5LnQNBWyeMyZA?g_st=aw',
-      embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3930.6338720483477!2d78.1206072!3d9.881052199999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b00c5eb692ca1e7%3A0x727ffe2450ac4303!2sAyusya%20health%20care%20%7C%20Home%20Nursing%20Service%20in%20Madurai%20%7C%20Home%20Care%20Service%20in%20Madurai%20%7C%20Patient%20care%20service%20in%20Madurai!5e0!3m2!1sen!2sin!4v1787636122987!5m2!1sen!2sin',
+      mapUrl: 'https://maps.google.com/?q=Maligai+Thani+Veedugal,+Avaniyapuram+Bypass+Rd,+Madurai,+Tamil+Nadu+625012',
+      embedUrl: 'https://maps.google.com/maps?q=Maligai%20Thani%20Veedugal,%20Avaniyapuram%20Bypass%20Rd,%20Madurai,%20Tamil%20Nadu%20625012&t=&z=15&ie=UTF8&iwloc=&output=embed',
     },
   ];
 

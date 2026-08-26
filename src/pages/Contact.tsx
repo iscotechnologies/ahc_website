@@ -5,6 +5,23 @@ import { MapPin, Phone, MessageSquare, Mail, Award, Clock } from 'lucide-react';
 import { AnimatedSection } from '../components/shared/AnimatedSection';
 
 export const Contact: React.FC = () => {
+  const [activeOfficeIndex, setActiveOfficeIndex] = React.useState(0);
+
+  const offices = [
+    {
+      name: 'Chennai Office (Head Office)',
+      address: 'Raja Street, T Nagar, Chennai 600017',
+      mapUrl: 'https://maps.google.com/?q=Raja+Street,+T+Nagar,+Chennai+600017',
+      embedUrl: 'https://maps.google.com/maps?q=Raja%20Street,%20T%20Nagar,%20Chennai%20600017&t=&z=15&ie=UTF8&iwloc=&output=embed',
+    },
+    {
+      name: 'Madurai Office',
+      address: 'Maligai Thani Veedugal, Avaniyapuram Bypass Rd, Madurai, Tamil Nadu 625012',
+      mapUrl: 'https://maps.google.com/?q=Maligai+Thani+Veedugal,+Avaniyapuram+Bypass+Rd,+Madurai,+Tamil+Nadu+625012',
+      embedUrl: 'https://maps.google.com/maps?q=Maligai%20Thani%20Veedugal,%20Avaniyapuram%20Bypass%20Rd,%20Madurai,%20Tamil%20Nadu%20625012&t=&z=15&ie=UTF8&iwloc=&output=embed',
+    },
+  ];
+
   const coordinates = [
     {
       icon: <Phone className="h-5 w-5 text-primary-600" />,
@@ -94,24 +111,38 @@ export const Contact: React.FC = () => {
               </div>
 
               {/* Office listing info */}
-              <AnimatedSection direction="up" className="rounded-2xl border border-warm-200 bg-white p-5 shadow-xs space-y-3">
-                <h3 className="font-serif text-sm font-bold text-warm-950 flex items-center gap-1">
-                  <MapPin className="h-4.5 w-4.5 text-primary-500" />
-                  <span>Main Center (Chennai)</span>
-                </h3>
-                <a
-                  href="https://maps.app.goo.gl/xruftuwdNpvEf5PA8?g_st=aw"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-warm-600 hover:text-primary-600 hover:underline leading-relaxed block transition-colors"
-                >
-                  No 15, North Usman Road, T. Nagar, Chennai - 600017
-                </a>
-                <div className="border-t border-warm-100 pt-3 flex items-center justify-between text-[11px] text-warm-500 font-medium">
-                  <span>Advisory coordinates in:</span>
-                  <span>Chennai / Madurai</span>
-                </div>
-              </AnimatedSection>
+              <div className="space-y-4">
+                {offices.map((office, idx) => (
+                  <AnimatedSection
+                    key={idx}
+                    direction="up"
+                    delay={idx * 0.05}
+                    className={`rounded-2xl border p-5 shadow-xs space-y-3 cursor-pointer transition-all ${
+                      activeOfficeIndex === idx
+                        ? 'border-primary-500 bg-primary-50/10'
+                        : 'border-warm-200 bg-white hover:border-warm-300'
+                    }`}
+                    onClick={() => setActiveOfficeIndex(idx)}
+                  >
+                    <h3 className="font-serif text-sm font-bold text-warm-950 flex items-center gap-1.5">
+                      <MapPin className="h-4.5 w-4.5 text-primary-500" />
+                      <span>{office.name}</span>
+                    </h3>
+                    <a
+                      href={office.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-warm-600 hover:text-primary-600 hover:underline leading-relaxed block transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveOfficeIndex(idx);
+                      }}
+                    >
+                      {office.address}
+                    </a>
+                  </AnimatedSection>
+                ))}
+              </div>
             </div>
 
             {/* General Contact Form Box (7 cols) */}
@@ -129,7 +160,7 @@ export const Contact: React.FC = () => {
           <AnimatedSection direction="up" className="rounded-3xl border border-warm-200 bg-white p-2 shadow-sm overflow-hidden h-87.5">
             <iframe
               title="Ayusya Google Map Navigation"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3886.9362802623314!2d80.2375786!3d13.0397279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52675edeadd6ed%3A0xd506c72f52426b08!2shome%20care%20service%20%7C%20home%20nursing%20services%20%7C%20patient%20care%20in%20Trichy!5e0!3m2!1sen!2sin!4v1787634046706!5m2!1sen!2sin"
+              src={offices[activeOfficeIndex].embedUrl}
               width="100%"
               height="100%"
               style={{ border: 0 }}
