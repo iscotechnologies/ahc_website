@@ -124,6 +124,7 @@ create table site_settings (
   hero_image_url text default 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1920&q=80',
   about_image_url text default 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80',
   career_image_url text default 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80',
+  home_doctor_image_url text default 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80',
   updated_at timestamptz default now(),
   constraint check_single_row check (id = 1)
 );

@@ -157,6 +157,7 @@ export const Dashboard: React.FC = () => {
   const [savingSettings, setSavingSettings] = useState(false);
   const [aboutImageUrl, setAboutImageUrl] = useState('');
   const [careerImageUrl, setCareerImageUrl] = useState('');
+  const [homeDoctorImageUrl, setHomeDoctorImageUrl] = useState('');
   const [savingPageImages, setSavingPageImages] = useState(false);
 
   // Database lists
@@ -204,6 +205,7 @@ export const Dashboard: React.FC = () => {
       setMarqueeNotification(siteSettings.marquee_notification || '');
       setAboutImageUrl(siteSettings.about_image_url || '');
       setCareerImageUrl(siteSettings.career_image_url || '');
+      setHomeDoctorImageUrl(siteSettings.home_doctor_image_url || '');
     }
   }, [siteSettings]);
 
@@ -297,6 +299,7 @@ export const Dashboard: React.FC = () => {
       await updateSettings({
         about_image_url: aboutImageUrl,
         career_image_url: careerImageUrl,
+        home_doctor_image_url: homeDoctorImageUrl,
       });
       await refreshSettings();
       showToast('Page images updated successfully!', 'success');
@@ -2200,6 +2203,28 @@ export const Dashboard: React.FC = () => {
           {activeTab === 'page_images' && (
             <form onSubmit={handleSavePageImages} className="max-w-2xl bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-xs text-left space-y-6">
               <h3 className="font-serif text-lg font-bold text-warm-950 border-b border-warm-100 pb-3">Update Page Section Images</h3>
+
+              {/* Home Page Doctor Image */}
+              <div className="space-y-4 font-sans">
+                <h4 className="text-sm font-bold text-warm-900 font-serif">Home Page</h4>
+                <p className="text-xs text-warm-600 leading-relaxed">
+                  This image is displayed in the "Clinical Excellence At Home" (Doctor Consultations) section on the Home page.
+                </p>
+                <FileUploadInput
+                  id="home-doctor-section-image"
+                  label="Home Doctor Section Image"
+                  value={homeDoctorImageUrl}
+                  onChange={(url) => setHomeDoctorImageUrl(url)}
+                  folder="home"
+                />
+                {homeDoctorImageUrl && (
+                  <div className="mt-2 rounded-2xl border border-warm-200 overflow-hidden max-w-xs aspect-video bg-warm-50">
+                    <img src={homeDoctorImageUrl} alt="Home doctor section preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              <hr className="border-warm-150" />
 
               {/* About Us Page Image */}
               <div className="space-y-4 font-sans">

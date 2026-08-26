@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { UserCheck, ShieldAlert, Award, FileSpreadsheet, ArrowRight } from 'lucide-react';
 import { AnimatedSection } from '../shared/AnimatedSection';
+import { useSettings } from '../../context/SettingsContext';
 
 export const DoctorIntro: React.FC = () => {
+  const { siteSettings } = useSettings();
   const highlights = [
     {
       icon: <Award className="h-6 w-6 text-primary-600" />,
@@ -35,7 +37,7 @@ export const DoctorIntro: React.FC = () => {
           <AnimatedSection direction="right" className="relative">
             <div className="relative overflow-hidden rounded-3xl bg-warm-100 p-2 shadow-sm border border-warm-200">
               <img
-                src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80"
+                src={siteSettings?.home_doctor_image_url || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80"}
                 alt="Doctor consulting senior patient at home"
                 className="rounded-2xl w-full h-87.5 sm:h-112.5 object-cover"
               />
