@@ -117,29 +117,32 @@ export const Contact: React.FC = () => {
                     key={idx}
                     direction="up"
                     delay={idx * 0.05}
-                    className={`rounded-2xl border p-5 shadow-xs space-y-3 cursor-pointer transition-all ${
-                      activeOfficeIndex === idx
-                        ? 'border-primary-500 bg-primary-50/10'
-                        : 'border-warm-200 bg-white hover:border-warm-300'
-                    }`}
-                    onClick={() => setActiveOfficeIndex(idx)}
                   >
-                    <h3 className="font-serif text-sm font-bold text-warm-950 flex items-center gap-1.5">
-                      <MapPin className="h-4.5 w-4.5 text-primary-500" />
-                      <span>{office.name}</span>
-                    </h3>
-                    <a
-                      href={office.mapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-warm-600 hover:text-primary-600 hover:underline leading-relaxed block transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveOfficeIndex(idx);
-                      }}
+                    <div
+                      className={`rounded-2xl border p-5 shadow-xs space-y-3 cursor-pointer transition-all ${
+                        activeOfficeIndex === idx
+                          ? 'border-primary-500 bg-primary-50/10'
+                          : 'border-warm-200 bg-white hover:border-warm-300'
+                      }`}
+                      onClick={() => setActiveOfficeIndex(idx)}
                     >
-                      {office.address}
-                    </a>
+                      <h3 className="font-serif text-sm font-bold text-warm-950 flex items-center gap-1.5">
+                        <MapPin className="h-4.5 w-4.5 text-primary-500" />
+                        <span>{office.name}</span>
+                      </h3>
+                      <a
+                        href={office.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-warm-600 hover:text-primary-600 hover:underline leading-relaxed block transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveOfficeIndex(idx);
+                        }}
+                      >
+                        {office.address}
+                      </a>
+                    </div>
                   </AnimatedSection>
                 ))}
               </div>
