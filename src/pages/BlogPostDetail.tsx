@@ -94,8 +94,9 @@ export const BlogPostDetail: React.FC = () => {
         return <p key={idx} className="mb-4 text-warm-700 leading-relaxed font-sans">{para}</p>;
       });
     }
-    // Renders HTML formatted content safely
-    return <div dangerouslySetInnerHTML={{ __html: blog.content }} className="prose prose-warm max-w-none prose-sm sm:prose-base font-sans text-warm-700 leading-relaxed" />;
+    // Renders HTML formatted content safely, replacing React's className with HTML's class
+    const processedHtml = blog.content.replace(/className=/gi, 'class=');
+    return <div dangerouslySetInnerHTML={{ __html: processedHtml }} className="prose prose-warm max-w-none prose-sm sm:prose-base font-sans text-warm-700 leading-relaxed" />;
   };
 
   return (

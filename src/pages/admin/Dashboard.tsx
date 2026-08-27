@@ -3903,10 +3903,10 @@ export const Dashboard: React.FC = () => {
                               const end = textarea.selectionEnd;
                               const text = textarea.value;
                               const selectedText = text.substring(start, end);
-                              const replacement = `<p className="mb-4">${selectedText}</p>`;
+                              const replacement = `<p class="mb-4">${selectedText}</p>`;
                               const newValue = text.substring(0, start) + replacement + text.substring(end);
                               setBlogForm({ ...blogForm, content: newValue });
-                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 21, start + 21 + selectedText.length); }, 0);
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 16, start + 16 + selectedText.length); }, 0);
                             }}
                             className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
                           >
@@ -3921,10 +3921,10 @@ export const Dashboard: React.FC = () => {
                               const end = textarea.selectionEnd;
                               const text = textarea.value;
                               const selectedText = text.substring(start, end);
-                              const replacement = `<ul className="list-disc pl-5 mb-4">\n  <li>${selectedText}</li>\n</ul>`;
+                              const replacement = `<ul class="list-disc pl-5 mb-4">\n  <li>${selectedText}</li>\n</ul>`;
                               const newValue = text.substring(0, start) + replacement + text.substring(end);
                               setBlogForm({ ...blogForm, content: newValue });
-                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 38, start + 38 + selectedText.length); }, 0);
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 39, start + 39 + selectedText.length); }, 0);
                             }}
                             className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
                           >
