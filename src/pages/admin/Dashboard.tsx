@@ -10,7 +10,9 @@ import { getHospitals, addHospital, updateHospital, deleteHospital, Hospital } f
 import { getHomeServices, addHomeService, updateHomeService, deleteHomeService, HomeService } from '../../lib/queries/homeServices';
 import { getServices, addService, updateService, deleteService, Service } from '../../lib/queries/services';
 import { getPartners, addPartner, updatePartner, deletePartner, Partner } from '../../lib/queries/partners';
+import { getBlogs, addBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '../../lib/queries/blogs';
 import { uploadPhoto } from '../../lib/queries/storage';
+
 import { 
   getContactSubmissions, 
   updateContactSubmission, 
@@ -59,8 +61,10 @@ import {
   Star,
   Heart,
   Handshake,
-  Image
+  Image,
+  BookOpen
 } from 'lucide-react';
+
 
 interface FileUploadInputProps {
   label: string;
@@ -146,7 +150,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({ label, value, onChang
 export const Dashboard: React.FC = () => {
 
   const { siteSettings, refreshSettings, signOut, user } = useSettings();
-  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services' | 'partners' | 'page_images'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'enquiries' | 'memberships' | 'referrals' | 'jobs' | 'applications' | 'doctors' | 'youtube' | 'hospitals' | 'reviews' | 'home_services' | 'services' | 'partners' | 'page_images' | 'blogs'>('settings');
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -188,6 +192,10 @@ export const Dashboard: React.FC = () => {
   const [partnersList, setPartnersList] = useState<Partner[]>([]);
   const [partnerForm, setPartnerForm] = useState<Partial<Partner> | null>(null);
 
+  // Blogs states
+  const [blogsList, setBlogsList] = useState<BlogPost[]>([]);
+  const [blogForm, setBlogForm] = useState<Partial<BlogPost> | null>(null);
+
   // Modals / Edit states
   const [doctorForm, setDoctorForm] = useState<Partial<TeamMember> | null>(null);
   const [youtubeForm, setYoutubeForm] = useState<Partial<Testimonial> | null>(null);
@@ -196,6 +204,7 @@ export const Dashboard: React.FC = () => {
   const [membershipForm, setMembershipForm] = useState<MembershipSubmission | null>(null);
   const [jobForm, setJobForm] = useState<Partial<JobOpening> | null>(null);
   const [applicationForm, setApplicationForm] = useState<JobApplication | null>(null);
+
 
   // Load configuration initially
   useEffect(() => {
@@ -253,7 +262,11 @@ export const Dashboard: React.FC = () => {
       } else if (activeTab === 'partners') {
         const data = await getPartners();
         setPartnersList(data);
+      } else if (activeTab === 'blogs') {
+        const data = await getBlogs();
+        setBlogsList(data);
       }
+
     } catch (err) {
       console.error(err);
       showToast('Failed to load database records.', 'error');
@@ -514,7 +527,58 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  // Blogs CRUD
+  const handleSaveBlogPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blogForm || !blogForm.title || !blogForm.slug || !blogForm.content) {
+      showToast('Please fill in Title, Slug, and Content.', 'error');
+      return;
+    }
+
+    try {
+      const payload = {
+        title: blogForm.title,
+        slug: blogForm.slug,
+        content: blogForm.content,
+        featured_image: blogForm.featured_image || '',
+        category: blogForm.category || '',
+        author: blogForm.author || 'Ayusya Team',
+        publish_date: blogForm.publish_date || new Date().toISOString(),
+        seo_title: blogForm.seo_title || '',
+        seo_description: blogForm.seo_description || '',
+        keywords: blogForm.keywords || '',
+        status: blogForm.status || 'Draft',
+      };
+
+      if (blogForm.id) {
+        await updateBlogPost(blogForm.id, payload);
+        showToast('Blog post updated successfully!', 'success');
+      } else {
+        await addBlogPost(payload);
+        showToast('New blog post created successfully!', 'success');
+      }
+      setBlogForm(null);
+      loadTabDynamicData();
+    } catch (err: any) {
+      console.error(err);
+      showToast(`Failed to save blog post: ${err.message || err}`, 'error');
+    }
+  };
+
+  const handleDeleteBlogPost = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) return;
+    try {
+      await deleteBlogPost(id);
+      showToast('Blog post deleted successfully.', 'success');
+      loadTabDynamicData();
+    } catch (err: any) {
+      console.error(err);
+      showToast(`Failed to delete blog post: ${err.message || err}`, 'error');
+    }
+  };
+
   // Homepage Services CRUD
+
   const handleSaveHomeService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!homeServiceForm || !homeServiceForm.title) return;
@@ -914,6 +978,19 @@ export const Dashboard: React.FC = () => {
               <Heart className="h-4.5 w-4.5" />
               <span>Services Offered</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('blogs')}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'blogs' 
+                  ? 'bg-primary-600 text-white shadow-md shadow-primary-600/10' 
+                  : 'text-warm-300 hover:bg-warm-850 hover:text-white'
+              }`}
+            >
+              <BookOpen className="h-4.5 w-4.5" />
+              <span>Manage Blogs</span>
+            </button>
+
           </nav>
         </div>
 
@@ -961,6 +1038,7 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'home_services' && 'Homepage Services Manager'}
               {activeTab === 'services' && 'Services Offered Manager'}
               {activeTab === 'partners' && 'Clinical Partners & Hospital Networks'}
+              {activeTab === 'blogs' && 'Manage Blog & Articles'}
             </h2>
             <p className="text-xs text-warm-500 mt-0.5">
               {activeTab === 'settings' && 'Manage maintenance panel settings and header marquee notifications.'}
@@ -977,7 +1055,9 @@ export const Dashboard: React.FC = () => {
               {activeTab === 'home_services' && 'Create, edit, delete, or upload images for the recommended services displayed on the homepage.'}
               {activeTab === 'services' && 'Create, edit, delete, or upload hero images for all main services offered.'}
               {activeTab === 'partners' && 'Manage clinical partner and network hospital logos displayed in the homepage marquee.'}
+              {activeTab === 'blogs' && 'Create, edit, delete, publish drafts, and configure SEO fields for blog posts.'}
             </p>
+
           </div>
           <div className="flex gap-2">
             <a
@@ -3625,8 +3705,444 @@ export const Dashboard: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* TAB 13: BLOG MANAGEMENT */}
+          {activeTab === 'blogs' && (
+            <div className="space-y-6 text-left font-sans">
+              {/* Top add panel bar */}
+              <div className="flex justify-between items-center bg-white border border-warm-200 rounded-2xl p-4 shadow-xs">
+                <p className="text-xs font-bold text-warm-600 uppercase tracking-wide">
+                  Blog Management ({blogsList.length} articles)
+                </p>
+                <button
+                  onClick={() => setBlogForm({ 
+                    title: '', 
+                    slug: '', 
+                    content: '', 
+                    featured_image: '', 
+                    category: 'General Health', 
+                    author: 'Ayusya Team', 
+                    publish_date: new Date().toISOString(), 
+                    seo_title: '', 
+                    seo_description: '', 
+                    keywords: '', 
+                    status: 'Draft' 
+                  })}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 text-xs font-bold shadow-xs hover:shadow-md cursor-pointer transition-all select-none"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Blog</span>
+                </button>
+              </div>
+
+              {/* Form container if active */}
+              {blogForm && (
+                <form onSubmit={handleSaveBlogPost} className="bg-white border border-warm-200 rounded-3xl p-6 md:p-8 shadow-md space-y-6 animate-fadeIn">
+                  <div className="flex justify-between items-center border-b border-warm-100 pb-3 font-serif">
+                    <h3 className="text-base font-bold text-warm-950">
+                      {blogForm.id ? `Edit Blog: ${blogForm.title}` : 'Add New Blog Post'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setBlogForm(null)}
+                      className="p-1.5 hover:bg-warm-100 rounded-xl text-warm-400 hover:text-warm-700 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    
+                    {/* Title */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Blog Title</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 5 Crucial Caretaker Tips for Post-Surgical Recovery at Home"
+                        value={blogForm.title || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updates: Partial<BlogPost> = { title: val };
+                          if (!blogForm.id || !blogForm.slug) {
+                            updates.slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                          }
+                          setBlogForm({ ...blogForm, ...updates });
+                        }}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Slug & Category */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">URL Slug (Identifier)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="caretaker-tips-post-surgical-recovery"
+                        value={blogForm.slug || ''}
+                        onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-/]+/g, '-') })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-semibold text-primary-700"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Category</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Geriatric Care, Home Nursing, Recovery"
+                        value={blogForm.category || ''}
+                        onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Author & Publish Date */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Author Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={blogForm.author || ''}
+                        onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Publish Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={blogForm.publish_date ? blogForm.publish_date.split('T')[0] : ''}
+                        onChange={(e) => setBlogForm({ ...blogForm, publish_date: new Date(e.target.value).toISOString() })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Featured Image */}
+                    <div className="sm:col-span-2">
+                      <FileUploadInput
+                        id="blog-featured-image"
+                        label="Featured Cover Image Upload"
+                        value={blogForm.featured_image || ''}
+                        onChange={(url) => setBlogForm({ ...blogForm, featured_image: url })}
+                        folder="blogs"
+                      />
+                      {blogForm.featured_image && (
+                        <div className="mt-2 rounded-2xl border border-warm-200 overflow-hidden max-w-xs aspect-video bg-warm-50">
+                          <img src={blogForm.featured_image} alt="Featured cover preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Rich Content Editor Textarea */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <label className="text-xs font-bold text-warm-700 uppercase tracking-wider block">Blog Post Content (HTML/Plain Text)</label>
+                        {/* Editor toolbar */}
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `<strong>${selectedText}</strong>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 8, start + 8 + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            Bold
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `<h2>${selectedText}</h2>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 4, start + 4 + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            H2 Header
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `<h3>${selectedText}</h3>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 4, start + 4 + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            H3 Header
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `<p className="mb-4">${selectedText}</p>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 21, start + 21 + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            Paragraph
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `<ul className="list-disc pl-5 mb-4">\n  <li>${selectedText}</li>\n</ul>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start + 38, start + 38 + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            Bullet List
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const textarea = document.getElementById('blog-content-textarea') as HTMLTextAreaElement;
+                              if (!textarea) return;
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const text = textarea.value;
+                              const selectedText = text.substring(start, end);
+                              const replacement = `${selectedText}<br/>`;
+                              const newValue = text.substring(0, start) + replacement + text.substring(end);
+                              setBlogForm({ ...blogForm, content: newValue });
+                              setTimeout(() => { textarea.focus(); textarea.setSelectionRange(start, start + selectedText.length); }, 0);
+                            }}
+                            className="px-2 py-1 bg-warm-100 hover:bg-warm-200 rounded-lg text-[10px] font-bold text-warm-700 cursor-pointer"
+                          >
+                            Break
+                          </button>
+                        </div>
+                      </div>
+                      <textarea
+                        id="blog-content-textarea"
+                        rows={12}
+                        required
+                        placeholder="Write article here. You can use standard paragraphs or use the quick tags formatting helper buttons above..."
+                        value={blogForm.content || ''}
+                        onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                        className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-3 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-mono font-medium leading-relaxed"
+                      />
+                    </div>
+
+                    {/* SEO Settings Sub-Panel Section */}
+                    <div className="sm:col-span-2 border-t border-warm-150 pt-4 mt-2 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4.5 w-4.5 text-primary-600" />
+                        <h4 className="text-sm font-bold text-warm-900 font-serif">SEO & Search Engine Fields</h4>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block">SEO Title (Overrides Title in browser header)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Best Patient Recovery Tips | Ayusya Health Care"
+                            value={blogForm.seo_title || ''}
+                            onChange={(e) => setBlogForm({ ...blogForm, seo_title: e.target.value })}
+                            className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block">SEO Description (Meta Description snippet)</label>
+                            <span className="text-[10px] font-bold text-warm-400">
+                              {(blogForm.seo_description || '').length} / 160 characters
+                            </span>
+                          </div>
+                          <textarea
+                            rows={2}
+                            placeholder="Provide a concise 140-160 character summary of the blog post to show on search engines..."
+                            value={blogForm.seo_description || ''}
+                            onChange={(e) => setBlogForm({ ...blogForm, seo_description: e.target.value })}
+                            className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <label className="text-[10px] font-bold text-warm-700 uppercase tracking-wider block">SEO Keywords (Comma-separated tags)</label>
+                          <input
+                            type="text"
+                            placeholder="patient recovery tips, home nursing checklist, geriatric care guides, Chennai caretakers"
+                            value={blogForm.keywords || ''}
+                            onChange={(e) => setBlogForm({ ...blogForm, keywords: e.target.value })}
+                            className="block w-full rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status & Save buttons */}
+                    <div className="sm:col-span-2 border-t border-warm-150 pt-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                      
+                      <div className="flex items-center gap-3">
+                        <label className="text-xs font-bold text-warm-700 uppercase tracking-wider">Publish Status:</label>
+                        <select
+                          value={blogForm.status || 'Draft'}
+                          onChange={(e) => setBlogForm({ ...blogForm, status: e.target.value as 'Draft' | 'Published' })}
+                          className="block rounded-2xl border border-warm-250 bg-warm-50/50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none transition-all font-bold text-warm-900"
+                        >
+                          <option value="Draft">Draft (Save privately)</option>
+                          <option value="Published">Published (Show on website)</option>
+                        </select>
+                      </div>
+
+                      <div className="flex gap-2 w-full sm:w-auto justify-end text-xs font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setBlogForm(null)}
+                          className="rounded-xl border border-warm-200 bg-white hover:bg-warm-100 px-4 py-2.5 text-warm-700 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 shadow-xs hover:shadow-md cursor-pointer transition-all"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span>{blogForm.id ? 'Update Post' : 'Create Post'}</span>
+                        </button>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </form>
+              )}
+
+              {/* Data Table */}
+              {loadingData ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                </div>
+              ) : (
+                <div className="bg-white border border-warm-200 rounded-3xl overflow-hidden shadow-xs animate-fadeIn">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-warm-100 border-b border-warm-200 text-warm-400 font-bold uppercase tracking-wider">
+                          <th className="px-6 py-4">Image</th>
+                          <th className="px-6 py-4">Blog Title</th>
+                          <th className="px-6 py-4">Category</th>
+                          <th className="px-6 py-4">Author</th>
+                          <th className="px-6 py-4">Publish Date</th>
+                          <th className="px-6 py-4 text-center">Status</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-warm-150">
+                        {blogsList.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-10 text-center text-warm-400 font-medium">
+                              No blog posts found in database. Click "Add New Blog" to write your first article.
+                            </td>
+                          </tr>
+                        ) : (
+                          blogsList.map((item) => {
+                            const pDate = new Date(item.publish_date).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric'
+                            });
+
+                            return (
+                              <tr key={item.id} className="hover:bg-warm-50/50 align-middle">
+                                <td className="px-6 py-4">
+                                  {item.featured_image ? (
+                                    <img
+                                      src={item.featured_image}
+                                      alt={item.title}
+                                      className="h-10 w-14 object-cover rounded-lg border border-warm-200 bg-warm-50"
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-14 rounded-lg bg-warm-100 flex items-center justify-center text-warm-400">
+                                      No Image
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="space-y-0.5 text-left max-w-sm">
+                                    <p className="font-bold text-warm-900 font-serif text-sm truncate">{item.title}</p>
+                                    <p className="text-[10px] text-primary-600 font-bold font-mono">/blog/{item.slug}</p>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 font-bold text-warm-750 whitespace-nowrap">{item.category}</td>
+                                <td className="px-6 py-4 font-semibold text-warm-700 whitespace-nowrap">{item.author}</td>
+                                <td className="px-6 py-4 font-medium text-warm-500 whitespace-nowrap">{pDate}</td>
+                                <td className="px-6 py-4 text-center whitespace-nowrap">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    item.status === 'Published'
+                                      ? 'bg-green-50 text-green-800 border-green-200'
+                                      : 'bg-warm-100 text-warm-600 border-warm-250'
+                                  }`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                  <button
+                                    onClick={() => setBlogForm(item)}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteBlogPost(item.id)}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-100 text-warm-600 hover:bg-red-50 hover:text-red-650 transition-colors cursor-pointer outline-none"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>
   );
 };
+

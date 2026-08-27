@@ -148,6 +148,16 @@ export const Header: React.FC = () => {
                 CAREERS
               </Link>
 
+              <Link
+                to="/blog"
+                className={`text-xs uppercase font-bold tracking-wider transition-colors hover:text-primary-600 ${
+                  location.pathname.startsWith('/blog') ? 'text-primary-600' : 'text-warm-700'
+                }`}
+              >
+                BLOG
+              </Link>
+
+
               {/* Contact Us Dropdown */}
               <div className="relative group">
                 <button
@@ -277,6 +287,16 @@ export const Header: React.FC = () => {
             >
               CAREERS
             </Link>
+
+            <Link
+              to="/blog"
+              className={`block rounded-xl px-4 py-2 text-xs font-bold uppercase hover:bg-warm-50 ${
+                location.pathname.startsWith('/blog') ? 'bg-primary-50 text-primary-700' : 'text-warm-700'
+              }`}
+            >
+              BLOG
+            </Link>
+
 
             {/* Mobile Contact Us List */}
             <div className="space-y-1">

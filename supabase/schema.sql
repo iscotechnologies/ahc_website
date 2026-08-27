@@ -323,3 +323,34 @@ create policy "Enable all for authenticated users" on homepage_services
   for all to authenticated using (true) with check (true);
 
 
+-- 14. Blogs and Articles Table
+create table blogs (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text unique not null,
+  content text not null,
+  featured_image text,
+  category text,
+  author text not null default 'Ayusya Team',
+  publish_date timestamptz default now(),
+  seo_title text,
+  seo_description text,
+  keywords text,
+  status text not null default 'Draft',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  constraint check_status check (status in ('Draft', 'Published'))
+);
+
+-- Enable Row Level Security (RLS)
+alter table blogs enable row level security;
+
+-- Policies for public reading and admin updating
+create policy "Enable select for all users" on blogs
+  for select using (true);
+
+create policy "Enable all for authenticated users" on blogs
+  for all to authenticated using (true) with check (true);
+
+
+

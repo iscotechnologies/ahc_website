@@ -14,6 +14,10 @@ import { ReferralPartner } from './pages/ReferralPartner';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsConditions } from './pages/TermsConditions';
 import { About } from './pages/About';
+import { BlogList } from './pages/BlogList';
+import { BlogPostDetail } from './pages/BlogPostDetail.tsx';
+
+
 
 // Admin Page Imports
 import { Login } from './pages/admin/Login';
@@ -23,6 +27,7 @@ import { Dashboard } from './pages/admin/Dashboard';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { useSettings } from './context/SettingsContext';
 import { LoadingSpinner } from './components/shared/LoadingSpinner';
+
 
 const Layout: React.FC = () => {
   const { siteSettings, loadingSettings } = useSettings();
@@ -93,6 +98,8 @@ export const router = createBrowserRouter([
       { path: 'privacy-policy', element: <PrivacyPolicy /> },
       { path: 'terms-conditions', element: <TermsConditions /> },
       { path: 'about', element: <About /> },
+      { path: 'blog', element: <BlogList /> },
+      { path: 'blog/:slug', element: <BlogPostDetail /> },
     ],
   },
   // Admin Authentication Routes (Excluded from maintenance interception)
