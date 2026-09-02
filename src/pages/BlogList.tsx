@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Search, Calendar, User, ArrowRight, BookOpen } from 'lucide-react';
+import { Search, Calendar, User, ArrowRight, BookOpen, Share2 } from 'lucide-react';
 import { getPublishedBlogs, BlogPost } from '../lib/queries/blogs';
 import { AnimatedSection } from '../components/shared/AnimatedSection';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
+import { useToast } from '../components/shared/Toast';
 
 export const BlogList: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -15,6 +16,7 @@ export const BlogList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [categories, setCategories] = useState<string[]>([]);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function loadBlogs() {
@@ -60,6 +62,22 @@ export const BlogList: React.FC = () => {
 
     setFilteredBlogs(result);
   }, [searchQuery, selectedCategory, blogs]);
+
+  const handleShare = async (post: BlogPost) => {
+    const url = `${window.location.origin}/blog/${post.slug}`;
+    const title = post.title;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      showToast('Article link copied to clipboard!', 'success');
+    }
+  };
 
   if (loading) {
     return (
@@ -199,7 +217,7 @@ export const BlogList: React.FC = () => {
                           {featuredPost.seo_description || featuredPost.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
                         </p>
                       </div>
-                      <div className="pt-4 border-t border-warm-100">
+                      <div className="pt-4 border-t border-warm-100 flex items-center justify-between">
                         <Link
                           to={`/blog/${featuredPost.slug}`}
                           className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-bold text-xs uppercase tracking-wider transition-colors group"
@@ -207,6 +225,13 @@ export const BlogList: React.FC = () => {
                           <span>Read Full Article</span>
                           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Link>
+                        <button
+                          onClick={() => handleShare(featuredPost)}
+                          className="inline-flex items-center gap-1.5 text-warm-500 hover:text-primary-600 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                        >
+                          <Share2 className="h-4 w-4" />
+                          <span className="hidden sm:inline">Share</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -263,7 +288,7 @@ export const BlogList: React.FC = () => {
                         </div>
 
                         {/* Read More button */}
-                        <div className="p-5 pt-0">
+                        <div className="p-5 pt-0 flex items-center justify-between">
                           <Link
                             to={`/blog/${post.slug}`}
                             className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-800 font-bold text-[10px] uppercase tracking-wider transition-colors group"
@@ -271,6 +296,13 @@ export const BlogList: React.FC = () => {
                             <span>Read More</span>
                             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                           </Link>
+                          <button
+                            onClick={() => handleShare(post)}
+                            className="inline-flex items-center gap-1 text-warm-400 hover:text-primary-600 transition-colors cursor-pointer"
+                            title="Share this article"
+                          >
+                            <Share2 className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </div>
                     </AnimatedSection>

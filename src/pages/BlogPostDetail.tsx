@@ -111,7 +111,7 @@ export const BlogPostDetail: React.FC = () => {
         <meta property="og:type" content="article" />
         <meta property="og:title" content={blog.seo_title || blog.title} />
         <meta property="og:description" content={blog.seo_description || blog.content.replace(/<[^>]*>/g, '').substring(0, 155)} />
-        {blog.featured_image && <meta property="og:image" content={blog.featured_image} />}
+        {blog.featured_image && <meta property="og:image" content={blog.featured_image.startsWith('http') ? blog.featured_image : `${window.location.origin}${blog.featured_image}`} />}
         <meta property="og:url" content={window.location.href} />
         <meta property="og:site_name" content="Ayusya Health Care" />
         <meta property="article:published_time" content={blog.publish_date} />
@@ -121,7 +121,7 @@ export const BlogPostDetail: React.FC = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={blog.seo_title || blog.title} />
         <meta name="twitter:description" content={blog.seo_description || blog.content.replace(/<[^>]*>/g, '').substring(0, 155)} />
-        {blog.featured_image && <meta name="twitter:image" content={blog.featured_image} />}
+        {blog.featured_image && <meta name="twitter:image" content={blog.featured_image.startsWith('http') ? blog.featured_image : `${window.location.origin}${blog.featured_image}`} />}
       </Helmet>
 
       <div className="flex-1 bg-transparent py-10 px-4 sm:px-6 lg:px-8 text-left">
