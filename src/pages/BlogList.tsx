@@ -69,20 +69,7 @@ export const BlogList: React.FC = () => {
 
     if (navigator.share) {
       try {
-        const shareData: ShareData = { title, url };
-
-        if (post.featured_image) {
-          try {
-            const res = await fetch(post.featured_image);
-            const blob = await res.blob();
-            const file = new File([blob], 'blog-image.jpg', { type: blob.type });
-            shareData.files = [file];
-          } catch {
-            // image fetch failed, share without image
-          }
-        }
-
-        await navigator.share(shareData);
+        await navigator.share({ title, text: title, url });
       } catch {
         // user cancelled
       }
