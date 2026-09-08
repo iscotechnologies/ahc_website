@@ -8,8 +8,8 @@ export default async function handler(req, res) {
     return res.status(404).send('Not found');
   }
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://fiebppjbofrjkdizwrko.supabase.co';
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpZWJwcGpib2ZyamtkaXp3cmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxODk0MzcsImV4cCI6MjEwMjc2NTQzN30.61vsBsHddnyjnBQ8_MykNm7YwyiI9Zz78Yn-H8XDrNI';
 
   let blogData = null;
 
@@ -82,6 +82,10 @@ export default async function handler(req, res) {
     <meta name="twitter:title" content="${ogTitle.replace(/"/g, '&quot;')}" />
     <meta name="twitter:description" content="${ogDescription}" />
     <meta name="twitter:image" content="${ogImage}" />`;
+
+  // Remove existing OG and Twitter tags to avoid duplicates
+  html = html.replace(/<meta\s+property="og:[^"]*"[^>]*>\s*/gi, '');
+  html = html.replace(/<meta\s+name="twitter:[^"]*"[^>]*>\s*/gi, '');
 
   if (html.includes('</head>')) {
     html = html.replace('</head>', `${ogTags}\n  </head>`);
