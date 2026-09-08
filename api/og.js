@@ -83,10 +83,6 @@ export default async function handler(req, res) {
     <meta name="twitter:description" content="${ogDescription}" />
     <meta name="twitter:image" content="${ogImage}" />`;
 
-  // Remove existing OG and Twitter tags to avoid duplicates
-  html = html.replace(/<meta\s+property="og:[^"]*"[^>]*>\s*/gi, '');
-  html = html.replace(/<meta\s+name="twitter:[^"]*"[^>]*>\s*/gi, '');
-
   if (html.includes('</head>')) {
     html = html.replace('</head>', `${ogTags}\n  </head>`);
   } else {
